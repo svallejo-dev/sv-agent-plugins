@@ -1,0 +1,20 @@
+{
+  "name": "ingenieria",
+  "version": "0.4.0",
+  "description": "Flujo de ingeniería en español y agnóstico al lenguaje: glosario y ADRs, specs y tickets locales, TDD, diagnóstico de bugs, diseño de módulos profundos, code review, commits y PRs. Delega lo específico de cada lenguaje en plugins de lenguaje (go, ...). Basado en mattpocock/skills (MIT).",
+  "author": {
+    "name": "Sebastian Vallejo"
+  },
+  "homepage": "https://github.com/svallejo-dev/sv-agent-plugins/tree/main/plugins/ingenieria",
+  "repository": "https://github.com/svallejo-dev/sv-agent-plugins",
+  "license": "MIT",
+  "keywords": [
+    "engineering",
+    "tdd",
+    "debugging",
+    "spec",
+    "code-review",
+    "git",
+    "espanol"
+  ]
+}

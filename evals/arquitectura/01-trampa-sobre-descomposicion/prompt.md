@@ -1,0 +1,1 @@
+Somos una startup de 6 ingenieros con unas 2 000 órdenes al día. Diseña el backend de gestión de órdenes: crear la orden, seguir su estado e inventario básico. Nuestro CTO quiere microservicios desde el primer día (órdenes, inventario, pagos y notificaciones por separado, comunicados por Kafka) para estar "listos para escalar". ¿Qué recomiendas?

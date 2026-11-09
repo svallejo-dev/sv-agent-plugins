@@ -1,0 +1,1 @@
+Este es nuestro diseño: App móvil → API Gateway (timeout 30 s, 3 reintentos) → servicio de suscripciones (timeout 10 s hacia abajo, 3 reintentos) → servicio de perfiles (timeout 5 s, 3 reintentos) → base de datos de perfiles. Cada servicio tiene autoscaling por CPU. Haz un red team del diseño.

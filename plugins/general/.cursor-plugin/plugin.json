@@ -1,0 +1,18 @@
+{
+  "name": "general",
+  "version": "0.2.0",
+  "description": "Skills de propósito general en español: interrogar planes (grilling), enseñar con analogías (teach), escribir para agentes, traspasos entre sesiones e investigación con fuentes primarias. Adaptadas de mattpocock/skills (MIT).",
+  "author": {
+    "name": "Sebastian Vallejo"
+  },
+  "homepage": "https://github.com/svallejo-dev/sv-agent-plugins/tree/main/plugins/general",
+  "repository": "https://github.com/svallejo-dev/sv-agent-plugins",
+  "license": "MIT",
+  "keywords": [
+    "grilling",
+    "teach",
+    "prompting",
+    "research",
+    "espanol"
+  ]
+}

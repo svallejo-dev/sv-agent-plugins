@@ -1,0 +1,23 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "qa",
+  "version": "0.2.0",
+  "description": "QA separado del dev, en español: criterios de aceptación con oráculo de uso, diseño de escenarios con técnicas ISTQB, automatización con herramientas existentes (Gherkin, Hurl, Testcontainers, Toxiproxy, Pact, Schemathesis, Playwright), verificación por peldaños con trazabilidad y sello de integridad, clasificación de fallos e inyección de bugs para probar las pruebas. El agente que implementa nunca escribe el oráculo y el QA nunca certifica.",
+  "author": {
+    "name": "Sebastian Vallejo",
+    "url": "https://github.com/svallejo-dev"
+  },
+  "homepage": "https://github.com/svallejo-dev/sv-agent-plugins/tree/main/plugins/qa",
+  "repository": "https://github.com/svallejo-dev/sv-agent-plugins",
+  "license": "MIT",
+  "keywords": [
+    "qa",
+    "testing",
+    "acceptance-testing",
+    "atdd",
+    "contract-testing",
+    "mutation-testing",
+    "adversarial-testing",
+    "espanol"
+  ]
+}

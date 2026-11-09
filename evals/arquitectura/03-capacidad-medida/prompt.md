@@ -1,0 +1,1 @@
+Nuestro servicio de checkout atiende 800 req/s en pico. Cada request llama de forma síncrona a la pasarela de pagos, cuyo p50 es 120 ms y su p99 es 1.4 s. El pool HTTP hacia la pasarela tiene 100 conexiones por instancia y corremos 4 instancias. En la próxima campaña esperamos 3× el pico actual. ¿El pool aguanta? ¿Qué cambiarías?

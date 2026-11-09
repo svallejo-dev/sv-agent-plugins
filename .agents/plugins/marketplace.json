@@ -1,0 +1,68 @@
+{
+  "name": "sv-agent-plugins",
+  "interface": {
+    "displayName": "SV Agent Plugins"
+  },
+  "plugins": [
+    {
+      "name": "general",
+      "source": {
+        "source": "local",
+        "path": "./plugins/general"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "ingenieria",
+      "source": {
+        "source": "local",
+        "path": "./plugins/ingenieria"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "qa",
+      "source": {
+        "source": "local",
+        "path": "./plugins/qa"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "go",
+      "source": {
+        "source": "local",
+        "path": "./plugins/go"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "arquitectura",
+      "source": {
+        "source": "local",
+        "path": "./plugins/arquitectura"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

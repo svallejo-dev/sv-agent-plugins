@@ -1,0 +1,21 @@
+{
+  "name": "go",
+  "version": "0.2.0",
+  "description": "Dominio Go: Go idiomático (Go 1.26), reglas de diseño, DDD táctico en Go y las skills de rol que usa el plugin ingenieria: go-review, go-testing, go-debugging y go-design.",
+  "author": {
+    "name": "Sebastian Vallejo",
+    "url": "https://github.com/svallejo-dev"
+  },
+  "homepage": "https://github.com/svallejo-dev/sv-agent-plugins/tree/main/plugins/go",
+  "repository": "https://github.com/svallejo-dev/sv-agent-plugins",
+  "license": "MIT",
+  "keywords": [
+    "go",
+    "golang",
+    "ddd",
+    "idiomatic",
+    "testing",
+    "review"
+  ],
+  "skills": "./skills/"
+}

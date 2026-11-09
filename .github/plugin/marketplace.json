@@ -1,0 +1,89 @@
+{
+  "name": "sv-agent-plugins",
+  "owner": {
+    "name": "Sebastian Vallejo"
+  },
+  "metadata": {
+    "description": "Plugins de ingeniería en español, compatibles con Claude Code, OpenAI Codex, GitHub Copilot, Cursor y Windsurf: flujo dev agnóstico al lenguaje, QA separado del dev, arquitectura de sistemas, Go y skills generales."
+  },
+  "plugins": [
+    {
+      "name": "general",
+      "source": "./plugins/general",
+      "description": "Skills de propósito general en español: interrogar planes (grilling), enseñar con analogías (teach), escribir para agentes, traspasos entre sesiones e investigación con fuentes primarias. Adaptadas de mattpocock/skills (MIT).",
+      "version": "0.2.0",
+      "keywords": [
+        "grilling",
+        "teach",
+        "prompting",
+        "research",
+        "espanol"
+      ],
+      "category": "productivity"
+    },
+    {
+      "name": "ingenieria",
+      "source": "./plugins/ingenieria",
+      "description": "Flujo de ingeniería en español y agnóstico al lenguaje: glosario y ADRs, specs y tickets locales, TDD, diagnóstico de bugs, diseño de módulos profundos, code review, commits y PRs. Delega lo específico de cada lenguaje en plugins de lenguaje (go, ...). Basado en mattpocock/skills (MIT).",
+      "version": "0.4.0",
+      "keywords": [
+        "engineering",
+        "tdd",
+        "debugging",
+        "spec",
+        "code-review",
+        "git",
+        "espanol"
+      ],
+      "category": "developer-tools"
+    },
+    {
+      "name": "qa",
+      "source": "./plugins/qa",
+      "description": "QA separado del dev, en español: criterios de aceptación con oráculo de uso, diseño de escenarios con técnicas ISTQB, automatización con herramientas existentes (Gherkin, Hurl, Testcontainers, Toxiproxy, Pact, Schemathesis, Playwright), verificación por peldaños con trazabilidad y sello de integridad, clasificación de fallos e inyección de bugs para probar las pruebas. El agente que implementa nunca escribe el oráculo y el QA nunca certifica.",
+      "version": "0.2.0",
+      "keywords": [
+        "qa",
+        "testing",
+        "acceptance-testing",
+        "atdd",
+        "contract-testing",
+        "mutation-testing",
+        "adversarial-testing",
+        "espanol"
+      ],
+      "category": "developer-tools"
+    },
+    {
+      "name": "go",
+      "source": "./plugins/go",
+      "description": "Dominio Go: Go idiomático (Go 1.26), reglas de diseño, DDD táctico en Go y las skills de rol que usa el plugin ingenieria: go-review, go-testing, go-debugging y go-design.",
+      "version": "0.2.0",
+      "keywords": [
+        "go",
+        "golang",
+        "ddd",
+        "idiomatic",
+        "testing",
+        "review"
+      ],
+      "category": "developer-tools"
+    },
+    {
+      "name": "arquitectura",
+      "source": "./plugins/arquitectura",
+      "description": "Diseño de sistemas a gran escala en español, partiendo de lo que ya existe o, sin métricas, del arquetipo del negocio: sparring de system design como delta (AS-IS → TO-BE → migración) o plan de PoC, red team en paralelo, capacidad calculada en código con escenarios y umbrales, diseño estratégico DDD, arquetipos de negocio y un catálogo curado de bloques.",
+      "version": "0.3.0",
+      "keywords": [
+        "system-design",
+        "architecture",
+        "distributed-systems",
+        "resilience",
+        "capacity-planning",
+        "ddd",
+        "espanol"
+      ],
+      "category": "developer-tools"
+    }
+  ]
+}
