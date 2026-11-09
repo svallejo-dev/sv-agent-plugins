@@ -10,8 +10,8 @@
     {
       "name": "general",
       "source": "./plugins/general",
-      "description": "Skills de propósito general en español: interrogar planes (grilling), enseñar con analogías (teach), escribir para agentes, traspasos entre sesiones e investigación con fuentes primarias. Adaptadas de mattpocock/skills (MIT).",
-      "version": "0.2.0",
+      "description": "Skills de propósito general en español: por dónde empezar (enrutador de flujos y plantilla de AGENTS.md), interrogar planes (grilling), enseñar con analogías (teach), escribir para agentes, traspasos entre sesiones e investigación con fuentes primarias. Adaptadas de mattpocock/skills (MIT).",
+      "version": "0.3.0",
       "category": "productivity",
       "keywords": [
         "grilling",
@@ -25,7 +25,7 @@
       "name": "ingenieria",
       "source": "./plugins/ingenieria",
       "description": "Flujo de ingeniería en español y agnóstico al lenguaje: glosario y ADRs, specs y tickets locales, TDD, diagnóstico de bugs, diseño de módulos profundos, code review, commits y PRs. Delega lo específico de cada lenguaje en plugins de lenguaje (go, ...). Basado en mattpocock/skills (MIT).",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "category": "developer-tools",
       "keywords": [
         "engineering",
@@ -41,7 +41,7 @@
       "name": "qa",
       "source": "./plugins/qa",
       "description": "QA separado del dev, en español: criterios de aceptación con oráculo de uso, diseño de escenarios con técnicas ISTQB, automatización con herramientas existentes (Gherkin, Hurl, Testcontainers, Toxiproxy, Pact, Schemathesis, Playwright), verificación por peldaños con trazabilidad y sello de integridad, clasificación de fallos e inyección de bugs para probar las pruebas. El agente que implementa nunca escribe el oráculo y el QA nunca certifica.",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "category": "developer-tools",
       "keywords": [
         "qa",
@@ -57,16 +57,18 @@
     {
       "name": "go",
       "source": "./plugins/go",
-      "description": "Dominio Go: Go idiomático (Go 1.26), reglas de diseño, DDD táctico en Go y las skills de rol que usa el plugin ingenieria: go-review, go-testing, go-debugging y go-design.",
-      "version": "0.2.0",
+      "description": "Dominio Go: Go idiomático (Go 1.26), reglas de diseño, DDD táctico en Go, simplificación sin cambiar comportamiento (go-simplify, con go fix y modernizadores) y las skills de rol que usa el plugin ingenieria: go-review, go-testing, go-debugging y go-design.",
+      "version": "0.3.0",
       "category": "developer-tools",
       "keywords": [
+        "ddd",
         "go",
         "golang",
-        "ddd",
         "idiomatic",
-        "testing",
-        "review"
+        "refactoring",
+        "review",
+        "simplify",
+        "testing"
       ]
     },
     {

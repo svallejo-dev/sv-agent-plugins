@@ -1,6 +1,6 @@
 ---
 name: git-commit
-description: "Write commit messages and create atomic git commits that follow the repo's own conventions (commitlint, CONTRIBUTING, git log style), falling back to Conventional Commits. Drafting only, nothing executed: \\\"write a commit message\\\", \\\"suggest a commit message\\\", \\\"redacta el mensaje de commit\\\", or a pasted diff. Runs git commit only when asked to commit: \\\"commit this\\\", \\\"haz commit\\\", \\\"commitea\\\", \\\"split into atomic commits\\\". Stages only the current task's files, leaves other changes alone, never pushes unless asked. Without a shell it drafts the text plus the commands.\\n"
+description: "Write commit messages and create atomic git commits that follow the repo's own conventions (commitlint, CONTRIBUTING, git log style), falling back to Conventional Commits. Drafting only, nothing executed: \"write a commit message\", \"suggest a commit message\", \"redacta el mensaje de commit\", or a pasted diff. Runs git commit only when asked to commit: \"commit this\", \"haz commit\", \"commitea\", \"split into atomic commits\". Stages only the current task's files, leaves other changes alone, never pushes unless asked. Without a shell it drafts the text plus the commands."
 license: MIT
 ---
 

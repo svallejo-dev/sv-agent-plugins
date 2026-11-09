@@ -1,6 +1,6 @@
 ---
 name: senior-go-idiomatic
-description: "Writes, reviews and explains idiomatic Go (baseline Go 1.26): errors, interfaces, generics, goroutines, channels and context, I/O, testing, benchmarks, pgx/sqlc databases, slog, go.mod and dependencies, project layout, security, and Go comment policy. Use whenever the user writes, reviews, debugs or asks about Go code or a Go snippet, mentions a goroutine, channel, context, go.mod, go test, benchmark, pgx, sqlc, slog or generics, asks \\\"is this idiomatic?\\\", or complains about too many comments / over-commented Go. Spanish triggers: \\\"¿es idiomático?\\\", \\\"revisa este código Go\\\", \\\"mi goroutine se queda colgada\\\", \\\"demasiados comentarios en Go\\\".\\n"
+description: "Writes, reviews and explains idiomatic Go (baseline Go 1.26): errors, interfaces, generics, goroutines, channels and context, I/O, testing, benchmarks, pgx/sqlc databases, slog, go.mod and dependencies, project layout, security, and Go comment policy. Use whenever the user writes, reviews, debugs or asks about Go code or a Go snippet, mentions a goroutine, channel, context, go.mod, go test, benchmark, pgx, sqlc, slog or generics, asks \"is this idiomatic?\", or complains about too many comments / over-commented Go. Spanish triggers: \"¿es idiomático?\", \"revisa este código Go\", \"mi goroutine se queda colgada\", \"demasiados comentarios en Go\"."
 license: MIT
 ---
 

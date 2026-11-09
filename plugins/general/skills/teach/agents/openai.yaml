@@ -1,0 +1,5 @@
+interface:
+  display_name: "Teach"
+  short_description: "Aprende un concepto en varias sesiones"
+policy:
+  allow_implicit_invocation: false

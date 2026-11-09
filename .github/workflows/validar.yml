@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -21,6 +23,12 @@ jobs:
 
       - name: Manifiestos al día con catalogo.json
         run: python3 tools/build_manifests.py --check
+
+      - name: Cada plugin cambiado subió su versión
+        if: github.event_name == 'pull_request' || github.event.before != '0000000000000000000000000000000000000000'
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then BASE="origin/${{ github.base_ref }}"; else BASE="${{ github.event.before }}"; fi
+          python3 tools/check_versions.py --base "$BASE"
 
       - name: Skills conformes al estándar Agent Skills
         run: |

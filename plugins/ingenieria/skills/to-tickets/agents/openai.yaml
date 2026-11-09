@@ -1,0 +1,5 @@
+interface:
+  display_name: "To tickets"
+  short_description: "Parte la spec en tickets verticales"
+policy:
+  allow_implicit_invocation: false

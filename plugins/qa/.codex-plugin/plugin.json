@@ -1,6 +1,6 @@
 {
   "name": "qa",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "QA separado del dev, en español: criterios de aceptación con oráculo de uso, diseño de escenarios con técnicas ISTQB, automatización con herramientas existentes (Gherkin, Hurl, Testcontainers, Toxiproxy, Pact, Schemathesis, Playwright), verificación por peldaños con trazabilidad y sello de integridad, clasificación de fallos e inyección de bugs para probar las pruebas. El agente que implementa nunca escribe el oráculo y el QA nunca certifica.",
   "author": {
     "name": "Sebastian Vallejo",

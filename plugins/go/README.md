@@ -3,6 +3,7 @@
 Dominio Go del marketplace `sv-agent-plugins`.
 
 - **Profundidad**: `senior-go-idiomatic`, `go-design-rules`, `ddd-go-idiomatic`.
+- **Simplificación**: `go-simplify` limpia código Go sin cambiar su comportamiento: primero herramientas deterministas (`gofmt -s`, `goimports`, `go fix` con los modernizadores de Go 1.26, `staticcheck` S1) y después un catálogo de simplificaciones de criterio (comentarios, ruido, anidamiento, errores, código muerto, duplicación), con tests en verde antes y después de cada paso.
 - **Roles para el plugin `ingenieria`**: `go-review` (lo carga `code-review`), `go-testing` (`tdd`), `go-debugging` (`diagnosing-bugs`) y `go-design` (`codebase-design`). Ver el [contrato de lenguajes](../../docs/CONTRATO-LENGUAJES.md).
 
 Funciona solo, pero rinde más con `ingenieria` instalado.

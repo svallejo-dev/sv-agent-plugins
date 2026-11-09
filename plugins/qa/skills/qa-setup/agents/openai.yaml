@@ -1,0 +1,5 @@
+interface:
+  display_name: "Setup de QA"
+  short_description: "Configura modo, peldaños y comandos de QA"
+policy:
+  allow_implicit_invocation: false

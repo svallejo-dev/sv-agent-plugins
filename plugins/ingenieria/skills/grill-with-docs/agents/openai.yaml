@@ -1,0 +1,5 @@
+interface:
+  display_name: "Grill with docs"
+  short_description: "Afila una idea por entrevista y deja glosario y ADRs"
+policy:
+  allow_implicit_invocation: false

@@ -1,6 +1,6 @@
 ---
 name: create-pr
-description: "Redacta o abre un pull request de GitHub para la rama actual, siguiendo la plantilla, el estilo de título y el idioma del repo; si no hay, usa un título Conventional Commits y una plantilla con resumen visual, evidencia antes/después y riesgo de merge. Solo redactar, sin push: \\\"write a PR description\\\", \\\"redacta la descripción del PR\\\", \\\"draft the PR\\\". Hace push y gh pr create solo cuando se pide abrirlo: \\\"open a PR\\\", \\\"abre un PR\\\", \\\"haz un PR\\\", \\\"sube esto a review\\\". Commitea solo los archivos de la tarea, maneja forks y nunca mergea. Sin shell o sin gh, redacta el texto y los comandos."
+description: "Redacta o abre un pull request de GitHub para la rama actual, siguiendo la plantilla, el estilo de título y el idioma del repo; si no hay, usa un título Conventional Commits y una plantilla con resumen visual, evidencia antes/después y riesgo de merge. Solo redactar, sin push: \"write a PR description\", \"redacta la descripción del PR\", \"draft the PR\". Hace push y gh pr create solo cuando se pide abrirlo: \"open a PR\", \"abre un PR\", \"haz un PR\", \"sube esto a review\". Commitea solo los archivos de la tarea, maneja forks y nunca mergea. Sin shell o sin gh, redacta el texto y los comandos."
 license: MIT
 ---
 
