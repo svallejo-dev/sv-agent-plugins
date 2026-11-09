@@ -17,6 +17,7 @@ Una vez por repo: `ingenieria-setup` y, si hay QA, `qa-setup`. Sus decisiones vi
 - **Feature**: `grill-with-docs` → `to-spec` → (QA: `qa-acceptance-criteria` → `qa-test-design` → `qa-test-automation`) → `to-tickets` → por ticket `tdd` + `qa-verify` por rebanada → `go-simplify` → `code-review` → `qa-test-the-tests` + `qa-verify` completo → `git-commit` → `create-pr`.
 - **Bug**: `diagnosing-bugs`. Primero un comando que reproduzca el fallo en rojo; después el arreglo, con un test de regresión.
 - **Sistema o migración**: `system-design` (con `capacity-estimation`, `design-stress-test` y `strategic-design`) → `to-spec`.
+- **PoC**: `system-design` en modo PoC → construir hipótesis por hipótesis desde el plan del experimento (sin `to-spec` ni `to-tickets`) → veredicto con medición por hipótesis → `system-design` en modo producción.
 - **Integración con un tercero**: la spec declara los consumidores del resultado; el primer ticket es el walking skeleton con el consumidor real; learning tests contra el sandbox antes de escribir fakes.
 
 ## Reglas

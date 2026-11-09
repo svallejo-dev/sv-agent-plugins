@@ -35,6 +35,17 @@ Un PoC existe para **reducir la incertidumbre más cara**, no para demostrar que
 - Instrumenta aunque el PoC sea pequeño: el objetivo es convertir supuestos en mediciones.
 - Escribe al final qué se aprendió y qué supuestos del diseño cambian; eso alimenta la versión de producción.
 
+### Del plan al código
+
+El plan del experimento **es la spec del PoC**. No hace falta pasarlo por `to-spec` ni partirlo con `to-tickets`: esas skills están pensadas para features de producción y aquí duplicarían el plan con una plantilla que no encaja.
+
+1. Construye **una hipótesis a la vez**, en el orden del plan (la más cara de equivocarse primero). Si hay un tercero, la primera es el walking skeleton contra su sandbox.
+2. Usa `tdd` solo para el núcleo de invariantes (no cobrar dos veces, no sobrevender); el resto puede ser código desechable.
+3. Cierra cada hipótesis con un **veredicto** (confirmada, refutada o no concluyente), la medición que lo respalda y qué cambia en el diseño. Regístralo en la sección del plan del design doc, o en `resultados.md` junto a él.
+4. Si se refuta una hipótesis, aplica su criterio de abandono antes de seguir con la siguiente: puede que las demás ya no importen.
+
+`to-spec` aporta solo si el PoC se construye en varias sesiones o lo construye otra persona, para dejar escritas las decisiones de implementación (stack, modelo de datos); como complemento del plan, no como sustituto. Para traspasar el trabajo, `handoff`.
+
 ### Del PoC a producción
 
 Al terminar el PoC, vuelve a `system-design` en modo producción con un **punto de partida nuevo**: el PoC ya es un sistema existente con métricas propias. Los supuestos del arquetipo que se midieron se reemplazan por sus valores reales; los que no, siguen marcados como supuestos.

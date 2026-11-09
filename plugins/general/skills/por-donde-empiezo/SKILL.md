@@ -23,7 +23,8 @@ Si la situación no está clara, haz una o dos preguntas: ¿hay un repositorio?,
 | Idea o feature nueva, dentro de un repo | `grill-with-docs` | El flujo principal (sección 2) |
 | Idea, plan o documento sin repo | `grilling` | `to-spec` si se va a construir |
 | Diseñar o cambiar un sistema (escala, persistencia, resiliencia, migración) | `system-design` | `capacity-estimation`, `design-stress-test`, `strategic-design`; luego `to-spec` |
-| Diseño exploratorio o PoC sin métricas | `system-design` en modo exploratorio | `business-archetypes` para partir del tipo de negocio |
+| Diseño exploratorio sin métricas | `system-design` en modo exploratorio | `business-archetypes` para partir del tipo de negocio que lo consume |
+| Construir un PoC | `system-design` en modo PoC | Construir hipótesis por hipótesis desde el plan del experimento, sin `to-spec` ni `to-tickets` (sección 2) |
 | Integrar con un tercero (pagos, partner, SDK) | `to-spec` con la sección de consumidores | `qa-test-design` (checklist de terceros) y walking skeleton como primer ticket |
 | Algo está roto o falla a ratos | `diagnosing-bugs` | Si viene de QA, con el comando de reproducción del hallazgo `H-NN` |
 | Revisar un cambio o un PR | `code-review` | Nunca aprueba: entrega hallazgos |
@@ -50,6 +51,8 @@ Si la situación no está clara, haz una o dos preguntas: ¿hay un repositorio?,
 6. **Antes del PR**: `go-simplify` (si es Go) → `code-review` → `qa-test-the-tests` y `qa-verify` completo → `git-commit` → `create-pr`.
 
 Sin QA separado, salta el paso 3 y los `qa-verify`: el riesgo es que el mismo agente que implementa decide qué significa "funciona".
+
+**Para un PoC el flujo es otro, más corto:** `system-design` en modo PoC deja el plan del experimento (hipótesis, alcance mínimo, qué medir, criterios de éxito y de abandono), y ese plan es la spec. Se construye una hipótesis a la vez con `tdd` solo en los invariantes, y cada una se cierra con su veredicto y la medición que lo respalda. Sin `to-spec`, sin `to-tickets` y sin QA completo. Al terminar, se vuelve a `system-design` en modo producción con el PoC como sistema existente.
 
 ## 3. Al terminar una fase: seguir, limpiar, traspasar, delegar o compactar
 
