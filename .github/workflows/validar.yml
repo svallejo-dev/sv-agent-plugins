@@ -53,3 +53,10 @@ jobs:
           for t in windsurf cursor codex claude copilot; do ./install.sh --tool "$t" --project-dir "$RUNNER_TEMP/p" --dry-run; done
           HOME="$RUNNER_TEMP/h" ./install.sh --tool windsurf --scope user --plugins qa
           for d in "$RUNNER_TEMP"/h/.codeium/windsurf/skills/*/; do agentskills validate "$d"; done
+
+      - name: Reglas globales (instalador y tamaño de la plantilla)
+        run: |
+          test "$(wc -m < plantillas/reglas-globales.md)" -le 6000
+          HOME="$RUNNER_TEMP/g" tools/instalar-reglas-globales.sh
+          test -L "$RUNNER_TEMP/g/.codex/AGENTS.md"
+          grep -qx "@$RUNNER_TEMP/g/.agents/AGENTS.md" "$RUNNER_TEMP/g/.claude/CLAUDE.md"

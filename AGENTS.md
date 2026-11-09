@@ -10,6 +10,7 @@ Responde y escribe en español; conserva en inglés los términos técnicos habi
 - `catalogo.json`: **fuente única** de nombres, versiones, descripciones y categorías de los plugins.
 - Manifiestos (`plugin.json`, `.claude-plugin/`, `.codex-plugin/`, `.cursor-plugin/`, `.agents/plugins/`, `.github/plugin/`): **generados**. No se editan a mano; se regeneran con `python3 tools/build_manifests.py`.
 - `install.sh`: instalación de skills sueltas (Windsurf y cualquier carpeta de skills).
+- `plantillas/reglas-globales.md` y `tools/instalar-reglas-globales.sh`: reglas de comportamiento personales, conectadas con el archivo global de cada herramienta. No son parte de ningún plugin. La plantilla debe quedar por debajo de 6 000 caracteres (límite de Windsurf).
 - `docs/CONTRATO-LENGUAJES.md`: el contrato `<lenguaje>-<rol>` entre `ingenieria` y los plugins de lenguaje.
 
 ## Reglas de las skills

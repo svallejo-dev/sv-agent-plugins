@@ -75,7 +75,7 @@
       "name": "arquitectura",
       "source": "./plugins/arquitectura",
       "description": "Diseño de sistemas a gran escala en español, partiendo de lo que ya existe o, sin métricas, del arquetipo del negocio: sparring de system design como delta (AS-IS → TO-BE → migración) o plan de PoC, red team en paralelo, capacidad calculada en código con escenarios y umbrales, diseño estratégico DDD, arquetipos de negocio y un catálogo curado de bloques.",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "category": "developer-tools",
       "keywords": [
         "system-design",

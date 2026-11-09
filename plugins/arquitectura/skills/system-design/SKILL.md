@@ -18,6 +18,20 @@ Trabaja en **rondas**: en cada ronda haz las preguntas cuyas respuestas ya puede
 
 Cuando el usuario cambie una restricción, nombra el supuesto que se invalida y rediseña solo la parte afectada. Defender un diseño hundido es peor que haber empezado con uno flojo.
 
+**El usuario manda el ritmo.** Puede quedarse en un tema todas las rondas que quiera, volver a uno cerrado o saltar a otro. No pases al siguiente paso del bucle hasta que lo pida o hasta que los temas del paso actual estén cerrados; si crees que conviene avanzar, propónlo en una línea y espera.
+
+**Registro de temas.** Lleva una tabla viva de los temas que salen en la conversación:
+
+| Tema | Estado | Decisión o pregunta pendiente | Base |
+|---|---|---|---|
+| Evaluación de reglas | cerrado | En el SDK, con reglas en caché | Latencia ~0; streaming medido en el PoC |
+| Multi-tenant | abierto | ¿Aislamiento por tenant en datos o solo en red? | Supuesto: un solo cliente al inicio |
+
+- Estados: `abierto`, `cerrado` (con su decisión) o `aplazado` (con la condición para retomarlo).
+- La columna **Base** dice en qué se apoya: medición, referencia, arquetipo o supuesto. Un tema cerrado sobre un supuesto se marca así, porque puede reabrirse.
+- Al final de cada ronda, una línea: cuántos temas siguen abiertos y cuáles. La tabla completa, cuando el usuario la pida.
+- Si hay repo, persiste la tabla en el design doc (sección "Temas"); los cerrados que sean difíciles de revertir pasan además a ADR.
+
 ## El bucle
 
 ### 0. Objetivo y punto de partida
@@ -33,6 +47,8 @@ Después establece de dónde se parte. **No tener métricas nunca bloquea el dis
 1. **Sistema existente**: levanta el AS-IS (arquitectura, flujos, dueños de datos, métricas medidas, SLOs, incidentes, deuda, restricciones contractuales y de equipo). Lee lo que haya: código, ADRs, RFCs, design docs, dashboards, postmortems.
 2. **Camino similar**: si no hay sistema propio, busca con `research` dos o tres sistemas parecidos documentados por quien ya los resolvió (blogs de ingeniería, papers, charlas). Extrae sus fuerzas y decisiones, y marca qué es distinto en tu caso: su escala no es tu escala, su equipo no es tu equipo.
 3. **Arquetipo de negocio**: si no hay sistema ni métricas (lo normal en un diseño exploratorio o un PoC), identifica el tipo de negocio (streaming, fintech, ticketing, e-commerce, social, SaaS B2B, IoT, movilidad, healthtech, plataforma de IA, plataforma de eventos) con `business-archetypes`. El arquetipo aporta las fuerzas dominantes, los invariantes, la forma de la carga, los subdominios típicos, los modos de fallo y las preguntas que cambian el diseño. Se combina con el camino similar cuando lo hay.
+
+   **Si diseñas una API, una plataforma o un componente que usan otros**, el arquetipo es el del **negocio que lo consume**, no el de la API. Una API de feature flags para una fintech hereda auditoría y control estricto de cambios; para un e-commerce, picos de campaña y despliegues frecuentes. Lo propio de la API (cómo resuelven otros el mismo problema técnico) sale del camino similar. Si hay varios consumidores, cada arquetipo aporta sus requisitos y el diseño cubre su unión o elige uno de forma explícita.
 
 El protocolo completo está en [references/punto-de-partida.md](references/punto-de-partida.md). Completa este paso cuando puedas describir el punto de partida (AS-IS, referencia o arquetipo) en un diagrama o una tabla de fuerzas, con los huecos explícitos.
 

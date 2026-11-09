@@ -59,7 +59,20 @@ En un PoC: | Hipótesis | Alcance mínimo | Instrumentación | Éxito | Abandono
 ## 11. Evolución
 Qué se rompe primero a ×10 y qué se haría entonces.
 
-## 12. Preguntas abiertas y riesgos aceptados
+## 12. Temas, preguntas abiertas y riesgos aceptados
+
+### Registro de temas
+
+| Tema | Estado | Decisión o pregunta pendiente | Base |
+|---|---|---|---|
+| | abierto / cerrado / aplazado | | medición / referencia / arquetipo / supuesto |
+
+Un tema cerrado sobre un supuesto puede reabrirse: anota qué señal lo reabriría. Los aplazados llevan la condición para retomarlos.
+
+### Riesgos aceptados
+
+| Riesgo | Por qué se acepta | Cómo se detecta si ocurre |
+|---|---|---|
 
 ### Validación antes de compartir
 - [ ] El punto de partida (AS-IS, referencia o arquetipo) está descrito y cada número tiene fuente
@@ -68,4 +81,5 @@ Qué se rompe primero a ×10 y qué se haría entonces.
 - [ ] El red team está hecho y cada riesgo tiene detección
 - [ ] El camino de migración marca las puertas de un sentido
 - [ ] La rúbrica está puntuada y la dimensión más débil, nombrada
+- [ ] No quedan temas abiertos sin dueño ni fecha, o están declarados como aplazados
 ~~~

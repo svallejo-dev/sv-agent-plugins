@@ -164,6 +164,27 @@ git -C <ruta-del-clon> pull
 
 La skill `por-donde-empiezo` tiene una plantilla de `AGENTS.md` con las reglas y los flujos de estos plugins. Pídele "deja las reglas de estos plugins en el repo" y la copia a tu `AGENTS.md`, quitando los plugins que no uses. Codex, Copilot, Cursor y Windsurf leen `AGENTS.md` directamente. Claude Code, en sus versiones recientes, también lo carga, pero solo cuando el proyecto no tiene `CLAUDE.md`; por eso la skill deja en `CLAUDE.md` una línea `@AGENTS.md`, que lo importa en cualquier caso. La plantilla está en [plugins/general/skills/por-donde-empiezo/references/plantilla-AGENTS.md](plugins/general/skills/por-donde-empiezo/references/plantilla-AGENTS.md).
 
+## Reglas globales de comportamiento
+
+Las skills se cargan bajo demanda; las reglas de **comportamiento** (cómo quieres que el agente te trate en cualquier proyecto) van en el archivo de instrucciones personales de cada herramienta, que se carga siempre. [plantillas/reglas-globales.md](plantillas/reglas-globales.md) es un punto de partida: desacuerdo con fundamento y siempre con alternativas, evidencia en vez de adjetivos, señalar el lenguaje que deja la puerta abierta ("creo", "me parece"), sin halagos.
+
+Una sola fuente (`~/.agents/AGENTS.md`) conectada con todas las herramientas:
+
+```bash
+tools/instalar-reglas-globales.sh            # crea la fuente desde la plantilla si no existe y la conecta
+"${EDITOR:-nano}" ~/.agents/AGENTS.md        # ajústala a tu gusto; los cambios llegan a todas las herramientas
+```
+
+| Herramienta | Archivo global | Cómo la conecta el script |
+|---|---|---|
+| Claude Code | `~/.claude/CLAUDE.md` | Añade una línea `@` con la ruta absoluta de la fuente |
+| Codex | `~/.codex/AGENTS.md` | Enlace simbólico |
+| Copilot CLI | `~/.copilot/copilot-instructions.md` | Enlace simbólico |
+| Windsurf | `~/.codeium/windsurf/memories/global_rules.md` | Enlace simbólico (Windsurf admite hasta 6 000 caracteres) |
+| Cursor | Settings → Rules → User Rules | Manual: pega el contenido |
+
+No reemplaza un archivo de instrucciones que ya tengas: te avisa para que unas su contenido con la fuente y vuelvas a ejecutarlo con `--force`, que deja una copia `.bak`. `--dry-run` muestra lo que haría.
+
 ## Cómo funcionan juntos
 
 ```
