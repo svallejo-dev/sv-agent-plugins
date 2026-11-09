@@ -162,7 +162,7 @@ git -C <ruta-del-clon> pull
 
 ## Usar las reglas en tu proyecto
 
-La skill `por-donde-empiezo` tiene una plantilla de `AGENTS.md` con las reglas y los flujos de estos plugins. Pídele "deja las reglas de estos plugins en el repo" y la copia a tu `AGENTS.md`, quitando los plugins que no uses. También crea un `CLAUDE.md` con `@AGENTS.md`, porque Claude Code lee `CLAUDE.md` y las demás herramientas leen `AGENTS.md`. La plantilla está en [plugins/general/skills/por-donde-empiezo/references/plantilla-AGENTS.md](plugins/general/skills/por-donde-empiezo/references/plantilla-AGENTS.md).
+La skill `por-donde-empiezo` tiene una plantilla de `AGENTS.md` con las reglas y los flujos de estos plugins. Pídele "deja las reglas de estos plugins en el repo" y la copia a tu `AGENTS.md`, quitando los plugins que no uses. Codex, Copilot, Cursor y Windsurf leen `AGENTS.md` directamente. Claude Code, en sus versiones recientes, también lo carga, pero solo cuando el proyecto no tiene `CLAUDE.md`; por eso la skill deja en `CLAUDE.md` una línea `@AGENTS.md`, que lo importa en cualquier caso. La plantilla está en [plugins/general/skills/por-donde-empiezo/references/plantilla-AGENTS.md](plugins/general/skills/por-donde-empiezo/references/plantilla-AGENTS.md).
 
 ## Cómo funcionan juntos
 

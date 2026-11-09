@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "general",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Skills de propósito general en español: por dónde empezar (enrutador de flujos y plantilla de AGENTS.md), interrogar planes (grilling), enseñar con analogías (teach), escribir para agentes, traspasos entre sesiones e investigación con fuentes primarias. Adaptadas de mattpocock/skills (MIT).",
   "author": {
     "name": "Sebastian Vallejo",

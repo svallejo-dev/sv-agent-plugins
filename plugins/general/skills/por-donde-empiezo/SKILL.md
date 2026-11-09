@@ -67,5 +67,5 @@ Si el usuario pide dejar en su repo las reglas de estos plugins:
 
 1. Copia [references/plantilla-AGENTS.md](references/plantilla-AGENTS.md) a `AGENTS.md` en la raíz del repositorio. Si ya existe, añade la plantilla como una sección y no borres nada.
 2. Quita las secciones de los plugins que no estén instalados y ajusta las rutas si `docs/agentes/` dice otra cosa.
-3. Para Claude Code, que lee `CLAUDE.md`, crea o completa `CLAUDE.md` con una línea `@AGENTS.md`. Codex, Copilot, Cursor y Windsurf leen `AGENTS.md` directamente.
+3. Codex, Copilot, Cursor y Windsurf leen `AGENTS.md` directamente. Claude Code, en sus versiones recientes, lo carga solo si el proyecto **no** tiene `CLAUDE.md`. Por eso: si ya existe un `CLAUDE.md`, añádele una línea `@AGENTS.md`; si no existe, crea uno con esa sola línea, que funciona igual en versiones antiguas y nuevas y no duplica nada.
 4. Enséñale el resultado y no hagas commit salvo que lo pida.
