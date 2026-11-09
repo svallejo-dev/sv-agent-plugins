@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""Falla si un plugin cambió respecto de la rama base sin subir su versión en catalogo.json.
+"""Fails if a plugin changed relative to the base branch without bumping its version in catalog.json.
 
-Claude Code, Codex y Copilot guardan cada plugin por número de versión: un cambio sin
-subir la versión nunca llega a quien ya lo tiene instalado.
+Claude Code, Codex and Copilot store each plugin by version number: a change without
+a version bump never reaches anyone who already has it installed.
 
-Uso:
+Usage:
   python3 tools/check_versions.py --base origin/main
 
-Compara el árbol de trabajo (commits y cambios sin commitear) contra la base.
-Códigos de salida: 0 todo en orden, 1 hay plugins cambiados sin subir versión, 2 error.
+Compares the working tree (commits and uncommitted changes) against the base.
+Exit codes: 0 all in order, 1 some plugins changed without a version bump, 2 error.
 """
 
 from __future__ import annotations
@@ -19,12 +19,14 @@ import subprocess
 import sys
 from pathlib import Path
 
-RAIZ = Path(__file__).resolve().parents[1]
-GENERADOS = {"plugin.json", ".claude-plugin/plugin.json", ".codex-plugin/plugin.json", ".cursor-plugin/plugin.json"}
+ROOT = Path(__file__).resolve().parents[1]
+GENERATED = {"plugin.json", ".claude-plugin/plugin.json", ".codex-plugin/plugin.json", ".cursor-plugin/plugin.json"}
+# The catalog was called catalogo.json before the repository moved to English; older base refs still have it.
+CATALOG_NAMES = ("catalog.json", "catalogo.json")
 
 
 def _git(*args: str) -> str:
-    r = subprocess.run(["git", "-C", str(RAIZ), *args], capture_output=True, text=True)
+    r = subprocess.run(["git", "-C", str(ROOT), *args], capture_output=True, text=True)
     if r.returncode != 0:
         raise RuntimeError(f"git {' '.join(args)}: {r.stderr.strip()}")
     return r.stdout
@@ -34,49 +36,60 @@ def _version(v: str) -> tuple[int, ...]:
     try:
         return tuple(int(x) for x in v.split("-")[0].split("."))
     except ValueError as e:
-        raise RuntimeError(f"versión no numérica: {v}") from e
+        raise RuntimeError(f"non-numeric version: {v}") from e
+
+
+def _base_catalog(base: str) -> dict:
+    for name in CATALOG_NAMES:
+        try:
+            return json.loads(_git("show", f"{base}:{name}"))
+        except RuntimeError:
+            continue
+    raise RuntimeError(f"no catalog found in {base} ({' or '.join(CATALOG_NAMES)})")
 
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--base", required=True, help="ref de git de la rama base, p. ej. origin/main")
+    ap.add_argument("--base", required=True, help="git ref of the base branch, e.g. origin/main")
     a = ap.parse_args(argv)
     try:
         _git("rev-parse", "--verify", f"{a.base}^{{commit}}")
-        base_cat = json.loads(_git("show", f"{a.base}:catalogo.json"))
-        cambiados = _git("diff", "--name-only", a.base, "--", "plugins").splitlines()
-        cambiados += _git("ls-files", "--others", "--exclude-standard", "--", "plugins").splitlines()
+        base_cat = _base_catalog(a.base)
+        changed = _git("diff", "--name-only", a.base, "--", "plugins").splitlines()
+        changed += _git("ls-files", "--others", "--exclude-standard", "--", "plugins").splitlines()
     except RuntimeError as e:
         print(f"error: {e}", file=sys.stderr)
         return 2
-    actual = {p["name"]: p["version"] for p in json.loads((RAIZ / "catalogo.json").read_text())["plugins"]}
-    antes = {p["name"]: p["version"] for p in base_cat["plugins"]}
-    problemas = []
-    for nombre, version in sorted(actual.items()):
-        prefijo = f"plugins/{nombre}/"
-        archivos = sorted({f for f in cambiados if f.startswith(prefijo) and f[len(prefijo):] not in GENERADOS})
-        if nombre not in antes:
-            print(f"  {nombre}: plugin nuevo ({version})")
+    current = {p["name"]: p["version"] for p in json.loads((ROOT / "catalog.json").read_text())["plugins"]}
+    before = {p["name"]: p["version"] for p in base_cat["plugins"]}
+    problems = []
+    for name, version in sorted(current.items()):
+        prefix = f"plugins/{name}/"
+        files = sorted({f for f in changed if f.startswith(prefix) and f[len(prefix):] not in GENERATED})
+        if name not in before:
+            print(f"  {name}: new plugin ({version})")
             continue
         try:
-            subio = _version(version) > _version(antes[nombre])
-            bajo = _version(version) < _version(antes[nombre])
+            bumped = _version(version) > _version(before[name])
+            lowered = _version(version) < _version(before[name])
         except RuntimeError as e:
-            print(f"error: {nombre}: {e}", file=sys.stderr)
+            print(f"error: {name}: {e}", file=sys.stderr)
             return 2
-        if bajo:
-            problemas.append(f"{nombre}: la versión bajó ({antes[nombre]} → {version})")
-        elif archivos and not subio:
-            muestra = ", ".join(archivos[:3]) + (f" y {len(archivos) - 3} más" if len(archivos) > 3 else "")
-            problemas.append(f"{nombre}: cambió ({muestra}) pero sigue en {version}; súbela en catalogo.json")
-        elif archivos:
-            print(f"  {nombre}: {antes[nombre]} → {version} ({len(archivos)} archivos cambiados)")
-    if problemas:
-        print("Plugins con cambios sin subir versión (nadie recibiría la actualización):")
-        for p in problemas:
+        if lowered:
+            problems.append(f"{name}: the version went down ({before[name]} → {version})")
+        elif files and not bumped:
+            sample = ", ".join(files[:3]) + (f" and {len(files) - 3} more" if len(files) > 3 else "")
+            problems.append(f"{name}: changed ({sample}) but is still at {version}; bump it in catalog.json")
+        elif files:
+            print(f"  {name}: {before[name]} → {version} ({len(files)} files changed)")
+    for name in sorted(set(before) - set(current)):
+        print(f"  {name}: removed from the catalog (installed copies stay until the user uninstalls them)")
+    if problems:
+        print("Plugins with changes and no version bump (nobody would receive the update):")
+        for p in problems:
             print(f"  - {p}")
         return 1
-    print("Versiones en orden.")
+    print("Versions in order.")
     return 0
 
 

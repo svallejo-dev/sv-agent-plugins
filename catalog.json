@@ -1,0 +1,87 @@
+{
+  "$comment": "Single source for the manifests. Edit this file and run: python3 tools/build_manifests.py",
+  "name": "sv-agent-plugins",
+  "displayName": "SV Agent Plugins",
+  "description": "Engineering plugins compatible with Claude Code, OpenAI Codex, GitHub Copilot, Cursor and Windsurf: a language-agnostic dev workflow, QA separated from dev, systems architecture, Go and general-purpose skills. Skills answer in the user's language.",
+  "owner": {
+    "name": "Sebastian Vallejo",
+    "url": "https://github.com/svallejo-dev"
+  },
+  "homepage": "https://github.com/svallejo-dev/sv-agent-plugins",
+  "repository": "https://github.com/svallejo-dev/sv-agent-plugins",
+  "license": "MIT",
+  "plugins": [
+    {
+      "name": "general",
+      "version": "0.4.0",
+      "category": "Productivity",
+      "description": "General-purpose skills: where to start (workflow router and AGENTS.md template), grilling a plan, teaching with analogies, writing for agents, handoffs between sessions and research from primary sources. Adapted from mattpocock/skills (MIT).",
+      "keywords": [
+        "grilling",
+        "teach",
+        "prompting",
+        "research",
+        "workflow"
+      ]
+    },
+    {
+      "name": "engineering",
+      "version": "0.5.0",
+      "category": "Developer Tools",
+      "description": "Language-agnostic engineering workflow: glossary and ADRs, local specs and tickets, TDD, bug diagnosis, deep-module design, code review, commits and PRs. Delegates language-specific work to language plugins (go, ...). Based on mattpocock/skills (MIT).",
+      "keywords": [
+        "engineering",
+        "tdd",
+        "debugging",
+        "spec",
+        "code-review",
+        "git"
+      ]
+    },
+    {
+      "name": "qa",
+      "version": "0.3.0",
+      "category": "Developer Tools",
+      "description": "QA separated from dev: acceptance criteria with a usage oracle, scenario design with ISTQB techniques, automation with existing tools (Gherkin, Hurl, Testcontainers, Toxiproxy, Pact, Schemathesis, Playwright), verification by rungs with traceability and an integrity seal, failure classification and bug injection to test the tests. The implementing agent never writes the oracle and QA never certifies.",
+      "keywords": [
+        "qa",
+        "testing",
+        "acceptance-testing",
+        "atdd",
+        "contract-testing",
+        "mutation-testing",
+        "adversarial-testing"
+      ]
+    },
+    {
+      "name": "go",
+      "version": "0.4.0",
+      "category": "Developer Tools",
+      "description": "Go domain: idiomatic Go (Go 1.26), design rules, tactical DDD in Go, behavior-preserving simplification (go-simplify, with go fix and modernizers) and the role skills the engineering plugin uses: go-review, go-testing, go-debugging and go-design.",
+      "keywords": [
+        "ddd",
+        "go",
+        "golang",
+        "idiomatic",
+        "refactoring",
+        "review",
+        "simplify",
+        "testing"
+      ]
+    },
+    {
+      "name": "architecture",
+      "version": "0.5.0",
+      "category": "Developer Tools",
+      "description": "Large-scale systems design, starting from what already exists or, without metrics, from the business archetype: system design sparring as a delta (AS-IS → TO-BE → migration) or a PoC plan, a parallel red team, capacity computed in code with scenarios and thresholds, DDD strategic design, business archetypes and a curated catalog of building blocks.",
+      "keywords": [
+        "system-design",
+        "architecture",
+        "distributed-systems",
+        "resilience",
+        "capacity-planning",
+        "ddd"
+      ]
+    }
+  ]
+}

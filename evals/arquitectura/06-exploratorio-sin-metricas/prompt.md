@@ -1,1 +1,0 @@
-Quiero explorar una idea: una app para vender entradas de conciertos medianos en Latinoamérica, con asientos numerados y pago con tarjeta. No tengo ningún dato de tráfico ni usuarios; es una exploración para decidir si hacemos un PoC. ¿Cómo la diseñarías?

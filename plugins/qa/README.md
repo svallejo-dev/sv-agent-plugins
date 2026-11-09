@@ -1,76 +1,76 @@
 # qa
 
-Dominio de QA del marketplace `sv-agent-plugins`: separa al que construye del que prueba, para que ningún agente se autocertifique. El dev implementa con `ingenieria`; el QA diseña y automatiza el oráculo con este plugin; los scripts deterministas cuentan; el humano decide.
+QA domain of the `sv-agent-plugins` marketplace: it separates whoever builds from whoever tests, so no agent certifies itself. The dev implements with `engineering`; QA designs and automates the oracle with this plugin; deterministic scripts count; the human decides.
 
-## Principios
+## Principles
 
-1. **El agente que implementa nunca escribe ni edita el oráculo** (criterios, escenarios, tests de aceptación). Si cree que un test está mal, escala.
-2. **El QA no certifica.** `verify` entrega puertas y evidencia; la decisión es humana.
-3. **Oráculo de uso**: si otro consume lo que produces, el consumidor decide si sirve, no la forma del artefacto.
-4. **Caja negra es información, no lugar**: el QA prueba la imagen del PR en un entorno hermético sin ver el código.
-5. **Si nadie lee el código, se prueban las pruebas**: sello de integridad, trazabilidad, determinismo e inyección de bugs.
+1. **The implementing agent never writes or edits the oracle** (criteria, scenarios, acceptance tests). If it believes a test is wrong, it escalates.
+2. **QA does not certify.** `verify` delivers gates and evidence; the decision is human.
+3. **Usage oracle**: if someone else consumes what you produce, the consumer decides whether it works, not the shape of the artifact.
+4. **Black box is information, not a place**: QA tests the PR image in a hermetic environment without seeing the code.
+5. **If nobody reads the code, the tests get tested**: integrity seal, traceability, determinism and bug injection.
 
-## Flujo
+## Flow
 
 ```
 to-spec ─► handoff ─► acceptance-criteria ─► test-design ─► test-automation ─► (dev: tdd)
-                                      │ premortem           │ 5 técnicas      │ learning tests        │ tests de aceptación
-                                      ▼                     ▼ en paralelo     ▼ rojo correcto         ▼ en solo lectura
-                                  aprobación humana     sello del diseño   sello de los tests     verify ─► hallazgos
-                                                                                                    │   (código → diagnosing-bugs)
+                                      │ premortem           │ 5 techniques    │ learning tests        │ acceptance tests
+                                      ▼                     ▼ in parallel     ▼ correct red           ▼ read-only
+                                  human approval        design seal        tests seal             verify ─► findings
+                                                                                                    │   (code → diagnosing-bugs)
                                                                                     test-the-tests ◄┘   (spec → acceptance-criteria)
 ```
 
 ## Skills
 
-| Skill | Invocación | Qué hace |
+| Skill | Invocation | What it does |
 |---|---|---|
-| `qa-setup` | usuario | Modo (solo o dúo), barrera de información, peldaños disponibles con su comando, modo de Pact. Escribe `docs/agentes/qa.md`. |
-| `qa-acceptance-criteria` | modelo | Criterios verificables desde fuera con su oráculo; oráculo de uso; criterios implícitos; premortem de criterios con 3 sub-agentes. |
-| `qa-test-design` | modelo | Exige el contrato de handoff; 5 sub-agentes en paralelo por familia de técnicas ISTQB y de fallo; asigna peldaño; traza y sella. |
-| `qa-test-automation` | modelo | Harness por peldaño, learning tests primero, escenarios con herramientas existentes; rojo por la razón correcta, determinismo y trazabilidad antes de sellar. |
-| `qa-verify` | modelo | Puertas deterministas por ritmo; clasificación de fallos (código, configuración, spec, test, entorno); push-down; informe sin "aprobado". |
-| `qa-test-the-tests` | modelo | Mutantes semánticos sobre el diff en worktrees temporales; los sobrevivientes son huecos concretos en los escenarios. |
-| `qa-toolbox` | modelo | Radar de herramientas y guía de elección por necesidad y peldaño. |
-| `qa-core` | modelo | Base compartida: referencias y scripts. **Instálala siempre** junto a las demás: todas la enlazan como carpeta hermana. |
+| `qa-setup` | user | Mode (solo or duo), information barrier, available rungs with their command, Pact mode. Writes `docs/agents/qa.md`. |
+| `qa-acceptance-criteria` | model | Criteria verifiable from the outside with their oracle; usage oracle; implicit criteria; criteria premortem with 3 subagents. |
+| `qa-test-design` | model | Requires the handoff contract; 5 parallel subagents per family of ISTQB and failure techniques; assigns the rung; traces and seals. |
+| `qa-test-automation` | model | Harness per rung, learning tests first, scenarios with existing tools; red for the right reason, determinism and traceability before sealing. |
+| `qa-verify` | model | Deterministic gates per cadence; failure classification (code, configuration, spec, test, environment); push-down; a report without "approved". |
+| `qa-test-the-tests` | model | Semantic mutants on the diff in temporary worktrees; survivors are concrete gaps in the scenarios. |
+| `qa-toolbox` | model | Tools radar and a guide to choosing by need and rung. |
+| `qa-core` | model | Shared base: references and scripts. **Always install it** next to the others: they all link to it as a sibling folder. |
 
-## Scripts (en `skills/qa-core/scripts/`, biblioteca estándar de Python, con tests)
+## Scripts (in `skills/qa-core/scripts/`, Python standard library, with tests)
 
-| Script | Qué hace |
+| Script | What it does |
 |---|---|
-| `scripts/sello.py` | Hash de todo el oráculo (criterios, escenarios, tests, scripts de peldaño, configuración); detecta cambios y enlaces simbólicos; contra la rama base lista cada re-sellado y rompe si se borró, se recreó o se re-selló sin citar `E-NN`/`H-NN`. |
-| `scripts/trazabilidad.py` | Cadena criterio → escenario → test → resultado desde Markdown, fuentes y JUnit de una sola ejecución; saltado, no ejecutado, reporte viejo, caso con varios IDs o criterio sin evidencia en el alcance no son verdes. |
-| `scripts/mutantes.py` | Parches de mutantes en worktrees temporales, con ejecución base obligatoria, huella del código, rutas prohibidas y grupo de procesos; solo cuenta como detectado si falla un escenario. |
+| `scripts/seal.py` | Hashes the whole oracle (criteria, scenarios, tests, rung scripts, configuration); detects changes and symbolic links; against the base branch it lists every reseal and breaks if the seal was deleted, recreated or resealed without citing `E-NN`/`F-NN`. |
+| `scripts/traceability.py` | Chain criterion → scenario → test → result from Markdown, sources and the JUnit reports of a single run; skipped, not executed, a stale report, a case with several IDs or a criterion with no evidence in scope are not green. |
+| `scripts/mutants.py` | Mutant patches in temporary worktrees, with a mandatory baseline run, a code fingerprint, forbidden paths and a process group; it counts as detected only if a scenario fails. |
 
 Tests: `python3 -m unittest discover -s skills/qa-core/scripts/tests`.
 
-## Referencias compartidas (en `skills/qa-core/referencias/`)
+## Shared references (in `skills/qa-core/references/`)
 
-- `referencias/modelo-de-roles.md`: roles, modos solo y dúo, barrera de información N1-N3, escalamiento, permisos por artefacto.
-- `referencias/escalera-de-ambientes.md`: peldaños 0 a 5, regla de asignación, ritmos.
-- `referencias/formatos.md`: handoff, criterios, escenarios, convención de IDs en JUnit, hallazgos, escalamientos, informe.
-- `referencias/portabilidad.md`: cómo se cumplen sub-agentes, preguntas y carga de skills en cada herramienta, y qué declarar si una capacidad falta.
+- `references/role-model.md`: roles, solo and duo modes, information barrier N1-N3, escalation, permissions per artifact.
+- `references/environment-ladder.md`: rungs 0 to 5, assignment rule, cadences.
+- `references/formats.md`: handoff, criteria, scenarios, ID convention in JUnit, findings, escalations, report.
+- `references/portability.md`: how subagents, questions and skill loading are handled in each tool, and what to declare if a capability is missing.
 
-## Lo que este plugin no garantiza (todavía)
+## What this plugin does not guarantee (yet)
 
-- **La barrera de información es por convención en N1**, y la regla de contaminación también: ninguna puerta comprueba qué leyó una sesión. Para garantía real, N2 o N3.
-- **El sello detecta, no impide, y no atribuye.** Un agente puede editar un test y volver a sellar. Lo que no puede es hacerlo sin que quede a la vista: `verify` compara contra la rama base y lista cada re-sellado para la revisión humana del PR. Quién lo hizo lo dice git, no el sello. Impedirlo según el rol (hooks) es la fase 2.
-- **El special-casing** (código que reconoce los datos del test) no lo detecta ningún script con certeza. Lo mitigan los datos aleatorios sin marcas, el aviso G9 de `verify` y la revisión de código.
-- **La cobertura depende del diseño de escenarios.** Las herramientas ejecutan; las técnicas y el humano deciden qué se prueba.
+- **The information barrier is by convention at N1**, and so is the contamination rule: no gate checks what a session read. For a real guarantee, N2 or N3.
+- **The seal detects, it does not prevent, and it does not attribute.** An agent can edit a test and reseal. What it cannot do is that without it showing: `verify` compares against the base branch and lists every reseal for the human PR review. Who did it is said by git, not by the seal. Preventing it by role (hooks) is phase 2.
+- **Special-casing** (code that recognizes the test's data) is not detected with certainty by any script. Random, unmarked data, the G9 warning in `verify` and code review mitigate it.
+- **Coverage depends on scenario design.** The tools execute; the techniques and the human decide what gets tested.
 
-## Dependencias
+## Dependencies
 
-Funciona solo. Rinde más con `ingenieria` (spec, tickets con walking skeleton, `tdd` como lazo interno, `diagnosing-bugs` para los hallazgos), `arquitectura` (modos de fallo por arquetipo) y un plugin de lenguaje (`go-testing` para la plomería en Go).
+It works on its own. It does more with `engineering` (spec, tickets with a walking skeleton, `tdd` as the inner loop, `diagnosing-bugs` for findings), `architecture` (failure modes per archetype) and a language plugin (`go-testing` for the Go plumbing).
 
-## Instalación
+## Installation
 
-Ver el [README del repositorio](../../README.md#instalación) para Claude Code, Codex, GitHub Copilot, Cursor y Windsurf. En resumen, con Claude Code:
+See the [repository README](../../README.md#installation) for Claude Code, Codex, GitHub Copilot, Cursor and Windsurf. In short, with Claude Code:
 
 ```bash
 claude plugin marketplace add svallejo-dev/sv-agent-plugins
 claude plugin install qa@sv-agent-plugins
 ```
 
-Después, en cada repo, ejecuta la skill `qa-setup`.
+Then, in each repo, run the `qa-setup` skill.
 
-Licencia MIT.
+All skills respond in the user's language. MIT license.

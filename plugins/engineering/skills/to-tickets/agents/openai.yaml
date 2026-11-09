@@ -1,0 +1,5 @@
+interface:
+  display_name: "To tickets"
+  short_description: "Splits the spec into vertical tickets"
+policy:
+  allow_implicit_invocation: false

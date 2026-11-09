@@ -1,0 +1,5 @@
+interface:
+  display_name: "Engineering setup"
+  short_description: "Sets up the repo's tracker, glossary and ADRs"
+policy:
+  allow_implicit_invocation: false

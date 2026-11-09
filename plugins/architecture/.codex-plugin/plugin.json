@@ -1,0 +1,21 @@
+{
+  "name": "architecture",
+  "version": "0.5.0",
+  "description": "Large-scale systems design, starting from what already exists or, without metrics, from the business archetype: system design sparring as a delta (AS-IS → TO-BE → migration) or a PoC plan, a parallel red team, capacity computed in code with scenarios and thresholds, DDD strategic design, business archetypes and a curated catalog of building blocks.",
+  "author": {
+    "name": "Sebastian Vallejo",
+    "url": "https://github.com/svallejo-dev"
+  },
+  "homepage": "https://github.com/svallejo-dev/sv-agent-plugins/tree/main/plugins/architecture",
+  "repository": "https://github.com/svallejo-dev/sv-agent-plugins",
+  "license": "MIT",
+  "keywords": [
+    "system-design",
+    "architecture",
+    "distributed-systems",
+    "resilience",
+    "capacity-planning",
+    "ddd"
+  ],
+  "skills": "./skills/"
+}

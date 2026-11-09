@@ -1,0 +1,1 @@
+This is our design: mobile app → API Gateway (30 s timeout, 3 retries) → subscriptions service (10 s timeout downstream, 3 retries) → profiles service (5 s timeout, 3 retries) → profiles database. Each service has CPU-based autoscaling. Red-team the design.

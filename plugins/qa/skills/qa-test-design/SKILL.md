@@ -1,86 +1,86 @@
 ---
 name: qa-test-design
-description: "Diseña los escenarios de prueba de una feature a partir de criterios aprobados y del contrato de handoff, con sub-agentes en paralelo por técnica (particiones y límites, tablas de decisión y estados, terceros y oráculo de uso, fallos y entorno, error guessing y abuso); asigna cada escenario a un peldaño y lo traza a sus criterios. Úsala cuando el usuario pida \"diseñar pruebas\", \"escenarios de prueba\", \"casos de prueba\", \"test cases\", \"plan de pruebas\" o después de aprobar criterios con qa-acceptance-criteria."
+description: "Designs a feature's test scenarios from approved criteria and the handoff contract, with parallel subagents per technique (partitions and boundaries, decision tables and states, third parties and usage oracle, failures and environment, error guessing and abuse); assigns each scenario to a rung and traces it to its criteria. Use it when the user asks to \"design tests\", for \"test scenarios\", \"test cases\", a \"test plan\", or after approving criteria with qa-acceptance-criteria."
 license: MIT
 ---
 
-# Diseño de escenarios
+# Scenario design
 
-Responde en español y conserva en inglés los términos técnicos habituales.
+Respond in the user's language; keep common technical terms in English.
 
-Convierte criterios aprobados en escenarios concretos: datos exactos, acción, resultado esperado y oráculo, cada uno en el peldaño donde puede fallar por la razón correcta. Esta es la capa más barata para detectar defectos de spec: un escenario se escribe en minutos y puede revelar que nadie sabe qué debe pasar.
+Turns approved criteria into concrete scenarios: exact data, action, expected result and oracle, each on the rung where it can fail for the right reason. This is the cheapest layer for finding spec defects: a scenario is written in minutes and can reveal that nobody knows what should happen.
 
-**Analogía:** un inspector de puentes no prueba "si el puente aguanta". Prueba la carga máxima, la carga justo por encima, el viento lateral, el tráfico detenido en la mitad y un camión frenando de golpe. Cada técnica es una forma sistemática de elegir qué cargas probar sin depender de la intuición del día.
+**Analogy:** a bridge inspector does not test "whether the bridge holds". They test the maximum load, the load just above it, crosswind, traffic stopped in the middle and a truck braking hard. Each technique is a systematic way to choose which loads to test without relying on the day's intuition.
 
-Lee primero [../qa-core/referencias/modelo-de-roles.md](../qa-core/referencias/modelo-de-roles.md), [../qa-core/referencias/escalera-de-ambientes.md](../qa-core/referencias/escalera-de-ambientes.md) y [../qa-core/referencias/formatos.md](../qa-core/referencias/formatos.md).
+First read [../qa-core/references/role-model.md](../qa-core/references/role-model.md), [../qa-core/references/environment-ladder.md](../qa-core/references/environment-ladder.md) and [../qa-core/references/formats.md](../qa-core/references/formats.md).
 
-## 0. Precondiciones: si falta algo, para
+## 0. Preconditions: if something is missing, stop
 
-1. `docs/agentes/qa.md` existe. Si no, pide ejecutar la skill `qa-setup` y para.
-2. `.scratch/<feature>/qa/criterios.md` tiene `Estado: aprobado`. Si está en borrador, para: los escenarios se diseñan contra criterios aprobados, no contra borradores.
-3. **Contrato de handoff** (`.scratch/<feature>/qa/handoff.md`) con las piezas obligatorias: superficie, consumidores, dependencias y artefacto ejecutable, y cada seam de testabilidad respondido. Si falta una pieza obligatoria, **no diseñes**: lista lo que falta, marca el handoff como `Estado: devuelto` y dile al usuario qué debe completar el dev. En modo solo, el humano completa el handoff antes de seguir.
-4. **Regla de contaminación**: igual que en `qa-acceptance-criteria`. Si esta sesión vio código de producción de la feature, todo el diseño se hace en los sub-agentes del paso 1, y la consolidación (paso 2) se delega a otro sub-agente limpio que recibe solo sus salidas; la sesión principal ejecuta el script, presenta y sella.
+1. `docs/agents/qa.md` exists. If not, ask to run the `qa-setup` skill and stop.
+2. `.scratch/<feature>/qa/criteria.md` has `Status: approved`. If it is a draft, stop: scenarios are designed against approved criteria, not drafts.
+3. **Handoff contract** (`.scratch/<feature>/qa/handoff.md`) with the mandatory pieces: surface, consumers, dependencies and executable artifact, and every testability seam answered. If a mandatory piece is missing, **do not design**: list what is missing, mark the handoff `Status: returned` and tell the user what the dev must complete. In solo mode, the human completes the handoff before continuing.
+4. **Contamination rule**: same as in `qa-acceptance-criteria`. If this session saw the feature's production code, all the design happens in the subagents of step 1, and the consolidation (step 2) is delegated to another clean subagent that receives only their outputs; the main session runs the script, presents and seals.
 
-## 1. Sub-agentes en paralelo, uno por familia de técnicas
+## 1. Parallel subagents, one per family of techniques
 
-Lanza los cinco sub-agentes juntos, cada uno con contexto limpio. Cada sub-agente recibe: los criterios aprobados, el handoff, los contratos de API, la escalera de ambientes y **su** sección de técnicas pegada completa desde [references/tecnicas.md](references/tecnicas.md). Ninguno recibe código de producción.
+Launch the five subagents together, each with a clean context. Each subagent receives: the approved criteria, the handoff, the API contracts, the environment ladder and **its** techniques section pasted in full from [references/techniques.md](references/techniques.md). None receives production code.
 
-> **Portabilidad:** si tu herramienta no tiene sub-agentes, sigue [../qa-core/referencias/portabilidad.md](../qa-core/referencias/portabilidad.md) y decláralo en el artefacto.
+> **Portability:** if your tool has no subagents, follow [../qa-core/references/portability.md](../qa-core/references/portability.md) and declare it in the artifact.
 
-| Sub-agente | Técnicas | Material adicional |
+| Subagent | Techniques | Additional material |
 |---|---|---|
-| A | Particiones de equivalencia y valores límite | — |
-| B | Tablas de decisión, transición de estados, combinatoria (pairwise) | — |
-| C | Integración con terceros y oráculo de uso | [references/terceros.md](references/terceros.md) completa; [../acceptance-criteria/references/oraculo-de-uso.md](../qa-acceptance-criteria/references/oraculo-de-uso.md) |
-| D | Fallos y entorno: dependencias, tiempo, concurrencia, idempotencia, datos | Los modos de fallo del arquetipo (`business-archetypes`) si aplica y está disponible |
-| E | Error guessing, abuso y seguridad básica | Incidentes previos del sistema, si existen |
+| A | Equivalence partitions and boundary values | — |
+| B | Decision tables, state transitions, combinatorics (pairwise) | — |
+| C | Third-party integration and usage oracle | [references/third-parties.md](references/third-parties.md) in full; [../qa-acceptance-criteria/references/usage-oracle.md](../qa-acceptance-criteria/references/usage-oracle.md) |
+| D | Failures and environment: dependencies, time, concurrency, idempotency, data | The archetype's failure modes (`business-archetypes`) if it applies and is available |
+| E | Error guessing, abuse and basic security | The system's previous incidents, if any |
 
-Encargo para cada uno:
+Assignment for each one:
 
-"Eres QA de la feature <feature>. Aplica SOLO tu familia de técnicas (<familia>) a estos criterios aprobados. No leas código de producción. Para cada escenario devuelve una fila: criterio(s) AC-NN, técnica, peldaño propuesto (con la regla de asignación de la escalera: el más bajo donde el comportamiento es observable y el oráculo es confiable), escenario en forma Dado/Cuando/Entonces con datos concretos, oráculo y, si necesita un seam de testabilidad, cuál. Si un criterio es ambiguo para tu técnica, no lo resuelvas inventando: anótalo como pregunta. Si encuentras un comportamiento que ningún criterio cubre, repórtalo como criterio faltante, no como escenario huérfano. Responde en español, como tabla más una lista de preguntas y criterios faltantes."
+"You are QA for the feature <feature>. Apply ONLY your family of techniques (<family>) to these approved criteria. Do not read production code. For each scenario return one row: criterion(s) AC-NN, technique, proposed rung (with the ladder's assignment rule: the lowest where the behavior is observable and the oracle is reliable), scenario in Given/When/Then form with concrete data, oracle and, if it needs a testability seam, which one. If a criterion is ambiguous for your technique, do not resolve it by inventing: note it as a question. If you find a behavior no criterion covers, report it as a missing criterion, not as an orphan scenario. Respond in the user's language, as a table plus a list of questions and missing criteria."
 
-**Por qué en paralelo y separados:** un solo agente que aplica todas las técnicas tiende a quedarse con las primeras ideas y a recortar las demás. Cada técnica en su propio contexto produce los casos que esa técnica, y solo esa, encuentra.
+**Why in parallel and separately:** a single agent applying every technique tends to stick with its first ideas and cut the rest. Each technique in its own context produces the cases that this technique, and only this one, finds.
 
-## 2. Consolida
+## 2. Consolidate
 
-1. **Criterios faltantes y preguntas** primero: si algún sub-agente encontró un comportamiento sin criterio o una ambigüedad, eso vuelve a `qa-acceptance-criteria` antes de seguir. Un escenario sin criterio no se agrega por la puerta de atrás.
-2. **Deduplica**: dos escenarios con el mismo comportamiento y datos equivalentes son uno. Conserva la técnica que lo justifica mejor.
-3. **Agrupa** como esquema de escenario (tabla de ejemplos) los casos que solo varían en datos: es más legible y cada fila sigue contando.
-4. **Asigna IDs** `ESC-NN` y el peldaño con la regla de asignación. No subas un escenario de peldaño para esquivar un seam faltante: márcalo `bloqueado-testabilidad`. Los escenarios que además sirven de smoke en staging llevan `1, 4` en la columna Peldaño, con el mismo ID.
-5. **Walking skeleton**: si hay un tercero o un consumidor externo nuevo, el primer escenario (`ESC-01` cuando sea posible) es el recorrido más delgado de punta a punta con el consumidor real, en peldaño 3. Ver [references/terceros.md](references/terceros.md).
-6. **Poda por riesgo, no por cansancio**: si el conjunto es demasiado grande, conserva siempre los escenarios de criterios de prioridad crítica, todos los límites y todas las transiciones inválidas de estado. Lo que se poda queda en la misma tabla con `Estado: descartado` y el motivo; no desaparece en silencio.
+1. **Missing criteria and questions** first: if any subagent found a behavior without a criterion or an ambiguity, it goes back to `qa-acceptance-criteria` before continuing. A scenario without a criterion is not added through the back door.
+2. **Deduplicate**: two scenarios with the same behavior and equivalent data are one. Keep the technique that justifies it best.
+3. **Group** as a scenario outline (table of examples) the cases that only vary in data: it is more readable and each row still counts.
+4. **Assign IDs** `SC-NN` and the rung with the assignment rule. Do not move a scenario up a rung to dodge a missing seam: mark it `blocked-testability`. Scenarios that also serve as a smoke test in staging carry `1, 4` in the Rung column, with the same ID.
+5. **Walking skeleton**: if there is a new third party or external consumer, the first scenario (`SC-01` when possible) is the thinnest end-to-end path with the real consumer, on rung 3. See [references/third-parties.md](references/third-parties.md).
+6. **Prune by risk, not by fatigue**: if the set is too large, always keep the scenarios of critical-priority criteria, all the boundaries and all the invalid state transitions. What gets pruned stays in the same table with `Status: discarded` and the reason; it does not disappear silently.
 
-## 3. Comprueba la cobertura con el script
+## 3. Check coverage with the script
 
-Escribe `.scratch/<feature>/qa/escenarios.md` con el formato de [../qa-core/referencias/formatos.md](../qa-core/referencias/formatos.md) y ejecuta:
-
-```bash
-python3 <qa-core>/scripts/trazabilidad.py \
-  --criterios .scratch/<feature>/qa/criterios.md \
-  --escenarios .scratch/<feature>/qa/escenarios.md
-```
-
-`<qa-core>` es la carpeta de la skill `qa-core`, hermana de esta. El resultado debe salir sin huecos: cada criterio con al menos un escenario ejecutable. Un criterio cubierto solo por escenarios bloqueados **es un hueco**, no una cobertura.
-
-## 4. Revisión y aprobación
-
-Presenta al humano:
-1. Preguntas abiertas y criterios faltantes (si quedaron).
-2. **Deuda de testabilidad**: escenarios bloqueados y qué seam los desbloquea.
-3. Walking skeleton y escenarios de oráculo de uso.
-4. La tabla completa, agrupada por criterio.
-
-- **Modo dúo**: el dev revisa solo la **realizabilidad** (¿el sistema expone lo necesario para observarlo?). Puede pedir aclaraciones, no recortar escenarios.
-- **Aprobación**: solo el humano cambia a `Estado: aprobado`. Nunca te auto-apruebes.
-
-## 5. Sella el diseño
-
-Con el diseño aprobado, sella criterios, escenarios y la configuración de QA, para que ningún agente los cambie sin dejar rastro (desde la raíz del repo; `<Aceptación>` sale de `docs/agentes/qa.md`):
+Write `.scratch/<feature>/qa/scenarios.md` in the format of [../qa-core/references/formats.md](../qa-core/references/formats.md) and run:
 
 ```bash
-python3 <qa-core>/scripts/sello.py sellar --sello <Aceptación>/<feature>/.qa-sello.json \
-  --motivo "diseño aprobado" .scratch/<feature>/qa/criterios.md .scratch/<feature>/qa/escenarios.md \
-  docs/agentes/qa.md
+python3 <qa-core>/scripts/traceability.py \
+  --criteria .scratch/<feature>/qa/criteria.md \
+  --scenarios .scratch/<feature>/qa/scenarios.md
 ```
 
-Si el diseño cambia más adelante (un hallazgo de spec, un mutante sobreviviente), se re-sella con `resellar` y un motivo que cite el `E-NN` o `H-NN`. Siguiente paso: `qa-test-automation`.
+`<qa-core>` is the folder of the `qa-core` skill, a sibling of this one. The result must come out without gaps: every criterion with at least one executable scenario. A criterion covered only by blocked scenarios **is a gap**, not coverage.
+
+## 4. Review and approval
+
+Present to the human:
+1. Open questions and missing criteria (if any remain).
+2. **Testability debt**: blocked scenarios and which seam unblocks them.
+3. Walking skeleton and usage-oracle scenarios.
+4. The full table, grouped by criterion.
+
+- **Duo mode**: the dev reviews only **feasibility** (does the system expose what is needed to observe it?). They can ask for clarification, not cut scenarios.
+- **Approval**: only the human changes it to `Status: approved`. Never approve yourself.
+
+## 5. Seal the design
+
+With the design approved, seal the criteria, the scenarios and the QA configuration, so no agent changes them without leaving a trace (from the repo root; `<Acceptance>` comes from `docs/agents/qa.md`):
+
+```bash
+python3 <qa-core>/scripts/seal.py seal --seal <Acceptance>/<feature>/.qa-seal.json \
+  --reason "design approved" .scratch/<feature>/qa/criteria.md .scratch/<feature>/qa/scenarios.md \
+  docs/agents/qa.md
+```
+
+If the design changes later (a spec finding, a surviving mutant), reseal with `reseal` and a reason that cites the `E-NN` or `F-NN`. Next step: `qa-test-automation`.

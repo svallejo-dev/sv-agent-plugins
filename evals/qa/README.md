@@ -1,22 +1,24 @@
-# Evals del plugin qa
+# Evals for the qa plugin
 
-Casos para medir si el plugin cambia el comportamiento del agente donde importa: oráculos independientes, resistencia a la trampa y clasificación honesta. Cada caso tiene un `prompt.md` (lo que recibe el agente, con los archivos que debe crear en un repo de prueba) y un `grader.md` (criterios PASS/FAIL para un juez).
+Cases to measure whether the plugin changes the agent's behavior where it matters: independent oracles, resistance to cheating and honest classification. Each case has a `prompt.md` (what the agent receives, with the files it must create in a test repo) and a `grader.md` (PASS/FAIL criteria for a judge).
 
-## Método
+## Method
 
-1. **Calibra al juez**: para cada caso, dale una respuesta fuerte y una deliberadamente mala. Si no las separa, el juez no sirve.
-2. **Con y sin plugin**: el mismo modelo, con `qa` (y `ingenieria`) instalados y sin ellos.
-3. **n = 3** por configuración; reporta media y dispersión.
-4. **Comprueba la composición**: que las skills se invocaron (sub-agentes lanzados, scripts ejecutados, archivos con el formato parseable). Un resultado correcto obtenido sin el proceso no cuenta como éxito del plugin.
-5. **Reporta dónde gana el baseline.** Un eval que siempre favorece al plugin no mide nada.
+1. **Calibrate the judge**: for each case, give it a strong answer and a deliberately bad one. If it does not separate them, the judge is useless.
+2. **With and without the plugin**: the same model, with `qa` (and `engineering`) installed and without them.
+3. **n = 3** per configuration; report the mean and the spread.
+4. **Check the composition**: that the skills were invoked (subagents launched, scripts run, files in the parseable format). A correct result obtained without the process does not count as a success of the plugin.
+5. **Report where the baseline wins.** An eval that always favors the plugin measures nothing.
 
-| Caso | Qué mide |
+The prompts are in English; to check that the skills answer in the user's language, run a case translated into another language and check the answer's language.
+
+| Case | What it measures |
 |---|---|
-| 01 token: variante del tercero | El caso real del BFF de PayPal: ¿el diseño de escenarios descubre la variante equivocada y la clave de caché antes de implementar? |
-| 02 tentación de editar un test | Con un test de aceptación sellado en rojo que parece incorrecto, ¿el agente dev escala en vez de editarlo? |
-| 03 clasificación de fallos | ¿`verify` clasifica bien código, configuración, spec, test y entorno, y no cierra un flaky como verde? |
-| 04 mutante sobreviviente | ¿El triage describe el hueco en términos de comportamiento y lo devuelve a diseño, sin filtrar el código al QA? |
-| 05 handoff incompleto | ¿`test-design` se niega a diseñar e identifica qué falta, en vez de inventar? |
-| 06 criterios débiles | ¿`acceptance-criteria` reescribe criterios de forma en criterios de uso y hace explícitos los implícitos? |
+| 01 third-party token variant | The real case of the PayPal BFF: does scenario design discover the wrong variant and the cache key before implementing? |
+| 02 temptation to edit a test | With a sealed, red acceptance test that looks wrong, does the dev agent escalate instead of editing it? |
+| 03 failure classification | Does `verify` correctly classify code, configuration, spec, test and environment, and not close a flaky test as green? |
+| 04 surviving mutant | Does the triage describe the gap in terms of behavior and send it back to design, without leaking the code to QA? |
+| 05 incomplete handoff | Does `test-design` refuse to design and identify what is missing, instead of inventing? |
+| 06 weak criteria | Does `acceptance-criteria` rewrite shape criteria into usage criteria and make the implicit ones explicit? |
 
-El caso 01 es el más importante: si el plugin no detecta ahí el bug que motivó su diseño, no sirve todavía.
+Case 01 is the most important: if the plugin does not catch there the bug that motivated its design, it is not useful yet.

@@ -1,52 +1,52 @@
-# Estructura del harness y reglas de datos
+# Harness structure and data rules
 
-## Carpeta de una feature
+## A feature's folder
 
 ```
-<Aceptación>/
-├── go.mod                módulo propio (Go): el compilador impide importar internal/ de producción
-├── bin/                  scripts de peldaño (contrato en qa-setup), sellados en cada feature
+<Acceptance>/
+├── go.mod                its own module (Go): the compiler prevents importing production internal/
+├── bin/                  rung scripts (contract in qa-setup), sealed in every feature
 └── <feature>/
-    ├── .qa-sello.json    sello de integridad (no editar a mano)
-    ├── README.md         qué seams usa; cómo se ejecuta
-    ├── features/         Gherkin: lo que lee el humano
-    ├── http/             Hurl: ESC-NN-<slug>.hurl
-    ├── steps/            plomería de los pasos (generada por IA)
-    ├── harness/          arranque del peldaño 1: imagen, Testcontainers, Toxiproxy, WireMock
-    ├── paginas/          consumidores mínimos del walking skeleton (los escribe el QA)
-    ├── aprendizaje/      learning tests contra el sandbox de terceros
-    ├── fakes/            mappings de WireMock grabados y redactados + GRABACION.md con fechas
-    └── datos/            generadores de datos de prueba (nunca datos reales)
+    ├── .qa-seal.json     integrity seal (do not edit by hand)
+    ├── README.md         which seams it uses; how it runs
+    ├── features/         Gherkin: what the human reads
+    ├── http/             Hurl: SC-NN-<slug>.hurl
+    ├── steps/            step plumbing (AI-generated)
+    ├── harness/          rung-1 startup: image, Testcontainers, Toxiproxy, WireMock
+    ├── pages/            minimal walking-skeleton consumers (written by QA)
+    ├── learning/         learning tests against third-party sandboxes
+    ├── fakes/            recorded and redacted WireMock mappings + RECORDING.md with dates
+    └── data/             test data generators (never real data)
 ```
 
-Los escenarios de smoke del peldaño 4 son los mismos archivos, con `1, 4` en su columna Peldaño; no hay carpeta aparte con IDs duplicados. Los contratos Pact viven en `contracts/` del repo, fuera de esta carpeta (ver pact-modos.md).
+The rung-4 smoke scenarios are the same files, with `1, 4` in their Rung column; there is no separate folder with duplicated IDs. Pact contracts live in the repo's `contracts/`, outside this folder (see pact-modes.md).
 
-Todo lo de `<feature>/` y `bin/` queda sellado, sin excepciones: el sello no ignora `node_modules`, `__pycache__` ni nada parecido, y rompe con cualquier enlace simbólico. **Nada se escribe dentro en tiempo de ejecución**: reportes, logs, cachés, `test-results/` de Playwright, `__pycache__` (usa `PYTHONDONTWRITEBYTECODE=1`) y grabaciones nuevas van a `$QA_REPORTES` o a un temporal. Si una ejecución modifica la carpeta, el sello se rompe y la verificación no puede distinguir una ejecución de una trampa.
+Everything in `<feature>/` and `bin/` is sealed, with no exceptions: the seal does not ignore `node_modules`, `__pycache__` or anything similar, and it breaks on any symbolic link. **Nothing is written inside at run time**: reports, logs, caches, Playwright's `test-results/`, `__pycache__` (use `PYTHONDONTWRITEBYTECODE=1`) and new recordings go to `$QA_REPORTS` or to a temporary folder. If a run modifies the folder, the seal breaks and the verification cannot tell a run apart from cheating.
 
-## Datos de prueba
+## Test data
 
-| Regla | Por qué |
+| Rule | Why |
 |---|---|
-| Cada escenario crea sus propios datos por la API o el seam de siembra | Sin dependencias ocultas entre escenarios ni del orden |
-| Valores aleatorios por ejecución, **sin prefijos ni patrones reconocibles** | Se puede correr en paralelo y repetir sin limpiar, y el código de producción no puede reconocer los datos del test para responder lo que espera (special-casing) |
-| Nunca se siembra escribiendo directo en la base del servicio | Se saltaría las reglas del sistema y el escenario probaría un estado imposible |
-| En staging, solo cuentas o tenants de prueba, y limpieza al final | No ensuciar un ambiente compartido; no tocar datos de otros |
-| Nunca datos personales reales; datos de tarjeta solo de prueba del proveedor | Cumplimiento (PCI, privacidad) |
+| Each scenario creates its own data through the API or the seeding seam | No hidden dependencies between scenarios or on their order |
+| Random values per run, **without recognizable prefixes or patterns** | It can run in parallel and repeat without cleanup, and production code cannot recognize the test's data to answer what it expects (special-casing) |
+| Never seed by writing directly into the service's database | It would skip the system's rules and the scenario would test an impossible state |
+| In staging, only test accounts or tenants, and cleanup at the end | Do not dirty a shared environment; do not touch other people's data |
+| Never real personal data; card data only from the provider's test set | Compliance (PCI, privacy) |
 
-Si el sistema no ofrece un seam de siembra, el escenario está `bloqueado-testabilidad`. No se "arregla" sembrando directo en la base.
+If the system offers no seeding seam, the scenario is `blocked-testability`. It is not "fixed" by seeding directly into the database.
 
-## Caja negra verificable
+## Verifiable black box
 
-La regla "ningún import de producción" se comprueba, no se confía:
+The "no production imports" rule is checked, not trusted:
 
-- Go: la carpeta de aceptación es un **módulo propio**, así que importar `internal/` de producción ni siquiera compila. Además, la comprobación de `docs/agentes/qa.md` (`go list -deps -test ./...` dentro del módulo de aceptación, sin rastro del módulo de producción). `-test` es imprescindible: las suites de godog viven en archivos `_test.go`.
-- Otros lenguajes: el equivalente con el analizador de dependencias, o un `grep` de las rutas de import de producción.
-- Una comprobación que **falla al ejecutarse** (por ejemplo `go list` con error y salida vacía) no cuenta como superada: verifica su código de salida.
+- Go: the acceptance folder is **its own module**, so importing production `internal/` does not even compile. On top of that, the check in `docs/agents/qa.md` (`go list -deps -test ./...` inside the acceptance module, with no trace of the production module). `-test` is essential: godog suites live in `_test.go` files.
+- Other languages: the equivalent with the dependency analyzer, or a `grep` of the production import paths.
+- A check that **fails to run** (for example `go list` with an error and empty output) does not count as passed: verify its exit code.
 
-`qa-verify` ejecuta esta comprobación como puerta.
+`qa-verify` runs this check as a gate.
 
-## El servicio como artefacto
+## The service as an artifact
 
-En el peldaño 1, el servicio se construye una vez como imagen (`docker build`) y el harness la arranca. Probar la imagen y no el código:
-- prueba lo que se despliega (configuración por variables, binario, dependencias del sistema);
-- mantiene la barrera de información: el QA necesita la imagen y el handoff, no el repositorio de código.
+On rung 1, the service is built once as an image (`docker build`) and the harness starts it. Testing the image and not the code:
+- tests what gets deployed (configuration via variables, binary, system dependencies);
+- keeps the information barrier: QA needs the image and the handoff, not the code repository.

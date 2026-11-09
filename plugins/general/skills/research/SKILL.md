@@ -1,17 +1,19 @@
 ---
 name: research
-description: "Investiga una pregunta contra fuentes primarias de alta confianza y deja los hallazgos en un archivo Markdown del repo. Úsala cuando el usuario quiera investigar un tema, reunir datos de documentación o de una API, o delegar lectura a un agente en segundo plano."
+description: "Researches a question against high-confidence primary sources and leaves the findings in a Markdown file in the repo. Use it when the user wants to research a topic, gather facts from documentation or an API, or delegate reading to a background agent."
 license: MIT
 ---
 
-Lanza un **agente en segundo plano** para hacer la investigación, así sigues trabajando mientras lee. Inícialo con contexto limpio.
+Respond in the user's language; keep common technical terms in English.
 
-> **Portabilidad:** si tu herramienta no tiene sub-agentes, ejecuta cada encargo en una conversación nueva con solo su brief, o en secuencia en esta sesión, y declara en el resultado que no hubo aislamiento de contexto.
+Launch a **background agent** to do the research, so you keep working while it reads. Start it with a clean context.
 
-Su encargo:
+> **Portability:** if your tool has no subagents, run each assignment in a new conversation with only its brief, or in sequence in this session, and declare in the result that there was no context isolation.
 
-1. Investigar la pregunta contra **fuentes primarias** (documentación oficial, código fuente, especificaciones, RFCs, APIs de primera mano, el `go doc` del paquete), no resúmenes de terceros. Seguir cada afirmación hasta la fuente que la posee.
-2. Escribir los hallazgos en español, en un único archivo Markdown, citando la fuente de cada afirmación con enlace. Marcar explícitamente lo que no pudo verificar.
-3. Guardarlo donde el repo ya guarde notas de este tipo, siguiendo la convención existente. Si no hay ninguna, usar `docs/investigaciones/<slug>.md` y decir dónde quedó.
+Its assignment:
 
-Cuando el agente termine, resume al usuario en 3-5 líneas lo que encontró y dale la ruta del archivo.
+1. Research the question against **primary sources** (official documentation, source code, specifications, RFCs, first-hand APIs, the package's `go doc`), not third-party summaries. Follow each claim to the source that owns it.
+2. Write the findings in the user's language, in a single Markdown file, citing the source of each claim with a link. Explicitly mark what it could not verify.
+3. Save it wherever the repo already keeps notes of this kind, following the existing convention. If there is none, use `docs/research/<slug>.md` and say where it went.
+
+When the agent finishes, summarize what it found for the user in 3-5 lines and give them the file path.

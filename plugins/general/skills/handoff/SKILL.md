@@ -1,22 +1,22 @@
 ---
 name: handoff
-description: "Compacta la conversación actual en un documento de traspaso para que otro agente (o una sesión nueva) retome el trabajo. Úsala solo cuando el usuario la pida explícitamente."
+description: "Compacts the current conversation into a handoff document so another agent (or a new session) can pick up the work. Use it only when the user explicitly asks for it."
 license: MIT
 ---
 
-Escribe en español un documento de traspaso que resuma la conversación actual para que un agente con contexto limpio pueda continuar el trabajo. Guárdalo en el directorio temporal del sistema (`$TMPDIR`, si no `/tmp`; `%TEMP%` en Windows), no en el workspace. Dile al usuario la ruta exacta.
+Write, in the user's language, a handoff document that summarizes the current conversation so an agent with a clean context can continue the work. Save it in the system's temporary directory (`$TMPDIR`, otherwise `/tmp`; `%TEMP%` on Windows), not in the workspace. Tell the user the exact path.
 
-Estructura sugerida:
+Suggested structure:
 
-- **Objetivo**: qué se intenta lograr y por qué.
-- **Estado**: qué está hecho, qué está a medias, qué falta.
-- **Decisiones tomadas**: con la razón en una línea cada una.
-- **Hipótesis abiertas y descartadas**: para que el siguiente agente no repita caminos.
-- **Siguiente paso concreto**: la primera acción que debería hacer.
-- **Skills sugeridas**: qué skills del marketplace debería invocar el siguiente agente (por ejemplo `diagnosing-bugs`, `tdd`).
+- **Goal**: what is being attempted and why.
+- **Status**: what is done, what is half-done, what is missing.
+- **Decisions made**: each with a one-line reason.
+- **Open and discarded hypotheses**: so the next agent does not repeat paths.
+- **Concrete next step**: the first action it should take.
+- **Suggested skills**: which marketplace skills the next agent should invoke (for example `diagnosing-bugs`, `tdd`).
 
-No dupliques contenido que ya vive en otros artefactos (specs, tickets, ADRs, commits, diffs). Referéncialos por ruta o URL.
+Do not duplicate content that already lives in other artifacts (specs, tickets, ADRs, commits, diffs). Reference them by path or URL.
 
-Redacta cualquier información sensible: API keys, contraseñas, tokens, datos personales. Escribe `<REDACTED>` en su lugar.
+Redact any sensitive information: API keys, passwords, tokens, personal data. Write `<REDACTED>` in its place.
 
-Si el usuario pasó argumentos, trátalos como la descripción de en qué se centrará la siguiente sesión y adapta el documento a ello.
+If the user passed arguments, treat them as the description of what the next session will focus on and tailor the document to it.

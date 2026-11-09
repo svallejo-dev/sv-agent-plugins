@@ -1,25 +1,25 @@
 #!/usr/bin/env python3
-"""Genera todos los manifiestos de plugins y marketplaces desde catalogo.json.
+"""Generates every plugin and marketplace manifest from catalog.json.
 
-Una sola fuente (catalogo.json) y un manifiesto por herramienta, para que no se desincronicen:
+One source (catalog.json) and one manifest per tool, so they never drift apart:
 
-  Por plugin (plugins/<nombre>/):
+  Per plugin (plugins/<name>/):
     plugin.json                  Agent Plugins 1.0 (Codex, GitHub Copilot, Cursor, VS Code)
     .claude-plugin/plugin.json   Claude Code
-    .codex-plugin/plugin.json    Codex (compatibilidad con versiones anteriores a Agent Plugins)
-    .cursor-plugin/plugin.json   Cursor (formato propio, usado por su marketplace)
+    .codex-plugin/plugin.json    Codex (compatibility with versions before Agent Plugins)
+    .cursor-plugin/plugin.json   Cursor (its own format, used by its marketplace)
 
-  En la raíz:
-    .claude-plugin/marketplace.json   Claude Code (también lo leen Codex y Copilot CLI)
+  At the root:
+    .claude-plugin/marketplace.json   Claude Code (Codex and Copilot CLI read it too)
     .agents/plugins/marketplace.json  Codex
-    .github/plugin/marketplace.json   GitHub Copilot CLI y VS Code
+    .github/plugin/marketplace.json   GitHub Copilot CLI and VS Code
     .cursor-plugin/marketplace.json   Cursor
 
-Windsurf no tiene sistema de plugins: instala las skills con install.sh (ver README).
+Windsurf has no plugin system: it installs the skills with install.sh (see README).
 
-Uso:
-  python3 tools/build_manifests.py           escribe los manifiestos
-  python3 tools/build_manifests.py --check   falla (exit 1) si alguno está desactualizado
+Usage:
+  python3 tools/build_manifests.py           writes the manifests
+  python3 tools/build_manifests.py --check   fails (exit 1) if any is out of date
 """
 
 from __future__ import annotations
@@ -30,111 +30,111 @@ import re
 import sys
 from pathlib import Path
 
-RAIZ = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_AGENT_PLUGINS = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
-RE_NOMBRE = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$")
+RE_NAME = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$")
 
 
-def _json(datos: dict) -> str:
-    return json.dumps(datos, indent=2, ensure_ascii=False) + "\n"
+def _json(data: dict) -> str:
+    return json.dumps(data, indent=2, ensure_ascii=False) + "\n"
 
 
-def _validar(cat: dict) -> list[str]:
-    errores = []
-    if not RE_NOMBRE.match(cat["name"]):
-        errores.append(f"nombre de marketplace inválido: {cat['name']}")
-    vistos = set()
+def _validate(cat: dict) -> list[str]:
+    errors = []
+    if not RE_NAME.match(cat["name"]):
+        errors.append(f"invalid marketplace name: {cat['name']}")
+    seen = set()
     for p in cat["plugins"]:
         n = p["name"]
-        if not RE_NOMBRE.match(n) or "--" in n:
-            errores.append(f"nombre de plugin inválido: {n}")
-        if n in vistos:
-            errores.append(f"plugin duplicado: {n}")
-        vistos.add(n)
-        carpeta = RAIZ / "plugins" / n
-        if not (carpeta / "skills").is_dir():
-            errores.append(f"plugins/{n}/skills no existe")
+        if not RE_NAME.match(n) or "--" in n:
+            errors.append(f"invalid plugin name: {n}")
+        if n in seen:
+            errors.append(f"duplicate plugin: {n}")
+        seen.add(n)
+        folder = ROOT / "plugins" / n
+        if not (folder / "skills").is_dir():
+            errors.append(f"plugins/{n}/skills does not exist")
             continue
-        for sk in sorted((carpeta / "skills").iterdir()):
+        for sk in sorted((folder / "skills").iterdir()):
             if sk.is_dir() and not (sk / "SKILL.md").is_file():
-                errores.append(f"{sk.relative_to(RAIZ)} no tiene SKILL.md")
-    todas = [sk.name for p in cat["plugins"] for sk in (RAIZ / "plugins" / p["name"] / "skills").glob("*/SKILL.md")
-             for sk in [sk.parent]]
-    repetidas = sorted({s for s in todas if todas.count(s) > 1})
-    if repetidas:
-        errores.append(f"nombres de skill repetidos entre plugins (chocan en herramientas sin espacios de nombres): {repetidas}")
-    return errores
+                errors.append(f"{sk.relative_to(ROOT)} has no SKILL.md")
+    all_skills = [sk.parent.name for p in cat["plugins"]
+                  for sk in (ROOT / "plugins" / p["name"] / "skills").glob("*/SKILL.md")]
+    repeated = sorted({s for s in all_skills if all_skills.count(s) > 1})
+    if repeated:
+        errors.append(f"skill names repeated across plugins (they clash in tools without namespaces): {repeated}")
+    return errors
 
 
-def generar(cat: dict) -> dict[Path, str]:
-    autor = {"name": cat["owner"]["name"], "url": cat["owner"]["url"]}
-    archivos: dict[Path, str] = {}
+def generate(cat: dict) -> dict[Path, str]:
+    author = {"name": cat["owner"]["name"], "url": cat["owner"]["url"]}
+    files: dict[Path, str] = {}
     for p in cat["plugins"]:
         base = Path("plugins") / p["name"]
-        comun = {"name": p["name"], "version": p["version"], "description": p["description"]}
+        common = {"name": p["name"], "version": p["version"], "description": p["description"]}
         meta = {"homepage": f"{cat['homepage']}/tree/main/plugins/{p['name']}", "repository": cat["repository"],
                 "license": cat["license"], "keywords": p["keywords"]}
-        archivos[base / "plugin.json"] = _json({"$schema": SCHEMA_AGENT_PLUGINS, **comun, "author": autor, **meta})
-        archivos[base / ".claude-plugin/plugin.json"] = _json({**comun, "author": {"name": autor["name"]}, **meta})
-        archivos[base / ".codex-plugin/plugin.json"] = _json({**comun, "author": autor, **meta, "skills": "./skills/"})
-        archivos[base / ".cursor-plugin/plugin.json"] = _json({**comun, "author": {"name": autor["name"]}, **meta})
+        files[base / "plugin.json"] = _json({"$schema": SCHEMA_AGENT_PLUGINS, **common, "author": author, **meta})
+        files[base / ".claude-plugin/plugin.json"] = _json({**common, "author": {"name": author["name"]}, **meta})
+        files[base / ".codex-plugin/plugin.json"] = _json({**common, "author": author, **meta, "skills": "./skills/"})
+        files[base / ".cursor-plugin/plugin.json"] = _json({**common, "author": {"name": author["name"]}, **meta})
 
     owner = {"name": cat["owner"]["name"]}
-    archivos[Path(".claude-plugin/marketplace.json")] = _json({
+    files[Path(".claude-plugin/marketplace.json")] = _json({
         "name": cat["name"], "owner": owner, "metadata": {"description": cat["description"]},
         "plugins": [{"name": p["name"], "source": f"./plugins/{p['name']}", "description": p["description"],
                      "version": p["version"], "category": p["category"].lower().replace(" ", "-"),
                      "keywords": p["keywords"]} for p in cat["plugins"]],
     })
-    archivos[Path(".agents/plugins/marketplace.json")] = _json({
+    files[Path(".agents/plugins/marketplace.json")] = _json({
         "name": cat["name"], "interface": {"displayName": cat["displayName"]},
         "plugins": [{"name": p["name"], "source": {"source": "local", "path": f"./plugins/{p['name']}"},
                      "policy": {"installation": "AVAILABLE", "authentication": "ON_INSTALL"},
                      "category": p["category"]} for p in cat["plugins"]],
     })
-    archivos[Path(".github/plugin/marketplace.json")] = _json({
+    files[Path(".github/plugin/marketplace.json")] = _json({
         "name": cat["name"], "owner": owner, "metadata": {"description": cat["description"]},
         "plugins": [{"name": p["name"], "source": f"./plugins/{p['name']}", "description": p["description"],
                      "version": p["version"], "keywords": p["keywords"],
                      "category": p["category"].lower().replace(" ", "-")} for p in cat["plugins"]],
     })
-    archivos[Path(".cursor-plugin/marketplace.json")] = _json({
+    files[Path(".cursor-plugin/marketplace.json")] = _json({
         "name": cat["name"], "owner": owner, "metadata": {"description": cat["description"]},
         "plugins": [{"name": p["name"], "source": f"plugins/{p['name']}", "description": p["description"],
                      "version": p["version"], "category": p["category"].lower().replace(" ", "-")}
                     for p in cat["plugins"]],
     })
-    return archivos
+    return files
 
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--check", action="store_true", help="no escribe; falla si hay manifiestos desactualizados")
+    ap.add_argument("--check", action="store_true", help="does not write; fails if any manifest is out of date")
     a = ap.parse_args(argv)
-    cat = json.loads((RAIZ / "catalogo.json").read_text(encoding="utf-8"))
-    errores = _validar(cat)
-    if errores:
-        for e in errores:
+    cat = json.loads((ROOT / "catalog.json").read_text(encoding="utf-8"))
+    errors = _validate(cat)
+    if errors:
+        for e in errors:
             print(f"error: {e}", file=sys.stderr)
         return 2
-    desactualizados = []
-    for ruta, contenido in generar(cat).items():
-        destino = RAIZ / ruta
-        actual = destino.read_text(encoding="utf-8") if destino.exists() else None
-        if actual != contenido:
-            desactualizados.append(ruta.as_posix())
+    stale = []
+    for path, content in generate(cat).items():
+        target = ROOT / path
+        current = target.read_text(encoding="utf-8") if target.exists() else None
+        if current != content:
+            stale.append(path.as_posix())
             if not a.check:
-                destino.parent.mkdir(parents=True, exist_ok=True)
-                destino.write_text(contenido, encoding="utf-8")
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text(content, encoding="utf-8")
     if a.check:
-        if desactualizados:
-            print("Manifiestos desactualizados (ejecuta python3 tools/build_manifests.py):")
-            for r in desactualizados:
+        if stale:
+            print("Out-of-date manifests (run python3 tools/build_manifests.py):")
+            for r in stale:
                 print(f"  {r}")
             return 1
-        print("Manifiestos al día.")
+        print("Manifests up to date.")
         return 0
-    print(f"Escritos {len(desactualizados)} manifiestos." if desactualizados else "Nada que cambiar.")
+    print(f"Wrote {len(stale)} manifests." if stale else "Nothing to change.")
     return 0
 
 

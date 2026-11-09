@@ -17,10 +17,10 @@
       "category": "Productivity"
     },
     {
-      "name": "ingenieria",
+      "name": "engineering",
       "source": {
         "source": "local",
-        "path": "./plugins/ingenieria"
+        "path": "./plugins/engineering"
       },
       "policy": {
         "installation": "AVAILABLE",
@@ -53,10 +53,10 @@
       "category": "Developer Tools"
     },
     {
-      "name": "arquitectura",
+      "name": "architecture",
       "source": {
         "source": "local",
-        "path": "./plugins/arquitectura"
+        "path": "./plugins/architecture"
       },
       "policy": {
         "installation": "AVAILABLE",

@@ -1,6 +1,6 @@
 ---
 name: ddd-go-idiomatic
-description: "Tactical Domain-Driven Design written as idiomatic Go, not translated Java: value objects, entities, aggregates, bounded contexts, repositories/ports, use cases and the file layout of a context. Use when designing, generating or reviewing Go domain code or deciding where logic, a use case or a file goes. Triggers: \"value object\", \"entity\", \"aggregate\", \"bounded context\", \"use case\", \"repository pattern\", \"DDD in Go\", \"hexagonal/clean architecture in Go\", \"where should this logic live\", service.go, usecase.go, handler.go, \"file naming\", \"how do I name this file\", \"one use case per file\", \"caso de uso\", \"objeto de valor\", \"agregado\", \"contexto acotado\", \"dónde va esta lógica\", \"cómo nombro este archivo\"."
+description: "Tactical Domain-Driven Design written as idiomatic Go, not translated Java: value objects, entities, aggregates, bounded contexts, repositories/ports, use cases and the file layout of a context. Use when designing, generating or reviewing Go domain code or deciding where logic, a use case or a file goes. Triggers: \"value object\", \"entity\", \"aggregate\", \"bounded context\", \"use case\", \"repository pattern\", \"DDD in Go\", \"hexagonal/clean architecture in Go\", \"where should this logic live\", service.go, usecase.go, handler.go, \"file naming\", \"how do I name this file\", \"one use case per file\"."
 license: MIT
 ---
 

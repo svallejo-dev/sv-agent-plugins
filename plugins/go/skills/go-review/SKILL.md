@@ -1,82 +1,82 @@
 ---
 name: go-review
-description: "Reglas de revisión específicas de Go para los archivos .go de un diff o un PR (corrección Go, idiomas, layout y DDD de la casa). La carga la skill code-review para su revisor de Go; úsala también cuando el usuario pida revisar solo código Go."
+description: "Go-specific review rules for the .go files of a diff or a PR (Go correctness, idioms, the house layout and DDD). The code-review skill loads it for its Go reviewer; also use it when the user asks to review only Go code."
 license: MIT
 ---
 
-# Revisión Go
+# Go review
 
-Responde en español y conserva en inglés los términos técnicos habituales.
+Respond in the user's language; keep common technical terms in English.
 
-Reglas para el revisor de Go. Se aplican **solo a los archivos `.go`** y **encima** de la rúbrica transversal de `code-review`: no repitas lo transversal (seguridad, tests, compatibilidad, tamaño) salvo cuando el problema sea un mecanismo propio de Go. Cada hallazgo lleva severidad (blocker / major / minor / nit), `ruta:línea`, por qué y un arreglo concreto.
+Rules for the Go reviewer. They apply **only to the `.go` files** and **on top of** the cross-cutting rubric of `code-review`: do not repeat the cross-cutting concerns (security, tests, compatibility, size) unless the problem is a mechanism specific to Go. Each finding carries a severity (blocker / major / minor / nit), `path:line`, why and a concrete fix.
 
-`<SHA>` es el commit revisado: `HEAD` en un diff local, o el `headRefOid` de un PR (leído tras `git fetch <remote> "pull/<n>/head"`, nunca del working tree).
+`<SHA>` is the reviewed commit: `HEAD` in a local diff, or a PR's `headRefOid` (read after `git fetch <remote> "pull/<n>/head"`, never from the working tree).
 
-## Quién es dueño de cada regla
+## Who owns each rule
 
-Cada regla tiene una skill dueña en este plugin; esta skill solo apunta a ellas. Para la regla completa y su razonamiento, invoca la dueña.
+Each rule has an owning skill in this plugin; this skill only points to them. For the full rule and its reasoning, invoke the owner.
 
-| Área | Dueña |
+| Area | Owner |
 |---|---|
-| Layout de bounded contexts, un caso de uso por archivo, forma del caso de uso, ports, ubicación de infraestructura | `ddd-go-idiomatic` |
-| Principios de diseño: Ley de Demeter, Tell-Don't-Ask, CQS, tipos con nombre, estados ilegales, dependencias explícitas | `go-design-rules` |
-| Política de comentarios, idiomas, errores, concurrencia, I/O, testing, tooling | `senior-go-idiomatic` |
+| Bounded-context layout, one use case per file, use-case shape, ports, placement of infrastructure | `ddd-go-idiomatic` |
+| Design principles: Law of Demeter, Tell-Don't-Ask, CQS, named types, illegal states, explicit dependencies | `go-design-rules` |
+| Comment policy, idioms, errors, concurrency, I/O, testing, tooling | `senior-go-idiomatic` |
 
-Si un principio de DDD u OOP choca con los idiomas de Go, ganan los idiomas de Go: una interface por struct, un paquete `mapper/`, getters/setters o carpetas por capa son hallazgos aunque "sigan DDD".
+If a DDD or OOP principle clashes with Go idioms, Go idioms win: one interface per struct, a `mapper/` package, getters/setters or folders per layer are findings even if they "follow DDD".
 
-## Paso 1: ¿el repo adopta las reglas de la casa?
+## Step 1: does the repo adopt the house rules?
 
-Las reglas de layout y de comentarios son convenciones de un equipo, no Go universal. Comprueba la adopción en `<SHA>`:
+The layout and comment rules are a team's conventions, not universal Go. Check adoption at `<SHA>`:
 
 ```bash
-git cat-file -e "<SHA>:.claude/skills/ddd-go-idiomatic/SKILL.md" 2>/dev/null && echo adoptado
+git cat-file -e "<SHA>:.claude/skills/ddd-go-idiomatic/SKILL.md" 2>/dev/null && echo adopted
 for f in AGENTS.md CLAUDE.md .claude/CLAUDE.md; do
-  git show "<SHA>:$f" 2>/dev/null | grep -Eiq 'ddd-go-idiomatic|one use case per file|un caso de uso por archivo' && echo "adoptado vía $f"
+  git show "<SHA>:$f" 2>/dev/null | grep -Eiq 'ddd-go-idiomatic|one use case per file' && echo "adopted via $f"
 done
 ```
 
-(Sin clon local, lee las mismas rutas con `gh api "repos/<owner>/<repo>/contents/<ruta>?ref=<SHA>"`; un 404 significa que no existe.)
+(Without a local clone, read the same paths with `gh api "repos/<owner>/<repo>/contents/<path>?ref=<SHA>"`; a 404 means it does not exist.)
 
-- **Adoptadas** → las violaciones de layout son **major** y las de la política de comentarios **minor**, citando la skill dueña.
-- **No adoptadas** → repórtalas como **minor** o **nit** "sugerencias de estilo de la casa", agrupadas, y nunca dejes que motiven un veredicto de pedir cambios. Sigue los patrones que el repo ya usa en vez de imponer nuevos.
+- **Adopted** → layout violations are **major** and comment-policy violations **minor**, citing the owning skill.
+- **Not adopted** → report them as **minor** or **nit** "house style suggestions", grouped, and never let them drive a request-changes verdict. Follow the patterns the repo already uses instead of imposing new ones.
 
-## Paso 2: detección rápida
+## Step 2: quick detection
 
 ```bash
-files=$(git diff --name-only <base>...<SHA> | grep '\.go$')   # en un PR: gh pr diff <n> --name-only | grep '\.go$'
-# nombres de archivo cajón de sastre
+files=$(git diff --name-only <base>...<SHA> | grep '\.go$')   # in a PR: gh pr diff <n> --name-only | grep '\.go$'
+# catch-all file names
 printf '%s\n' "$files" | grep -E '(^|/)(service|services|usecase|usecases|use_cases|application|app|manager|helpers|utils|common)\.go$'
-# tipos cajón de sastre añadidos
+# catch-all types added
 git diff <base>...<SHA> -- $files | grep -E '^\+type ([A-Za-z]*(Service|UseCase|Manager)) struct'
-# varios métodos exportados con ctx en un mismo receptor (¿más de un caso de uso por archivo?)
+# several exported methods with ctx on the same receiver (more than one use case per file?)
 for f in $(printf '%s\n' "$files" | grep -v '_test\.go$'); do
   c=$(git show "<SHA>:$f" 2>/dev/null | grep -cE '^func \([a-z]+ \*?[A-Z][A-Za-z0-9_]*\) [A-Z][A-Za-z0-9_]*\(ctx context\.Context')
-  [ "${c:-0}" -gt 1 ] && echo "$f: $c métodos exportados con ctx"
+  [ "${c:-0}" -gt 1 ] && echo "$f: $c exported methods with ctx"
 done
-# banners de comentarios añadidos
+# comment banners added
 git diff <base>...<SHA> -- $files | grep -nE '^\+[[:space:]]*// ?[-=]{4,}'
 ```
 
-Cada coincidencia es una candidata: confírmala leyendo el archivo. Los adapters (stores, repositorios) implementan legítimamente varios métodos de un port; un composition root (`cmd/<app>/main.go`, `internal/handlers/handlers.go`) cablea legítimamente muchas rutas.
+Each match is a candidate: confirm it by reading the file. Adapters (stores, repositories) legitimately implement several methods of a port; a composition root (`cmd/<app>/main.go`, `internal/handlers/handlers.go`) legitimately wires many routes.
 
-## Paso 3: corrección Go (cualquier repo)
+## Step 3: Go correctness (any repo)
 
-Bugs generales de Go, con severidad según su impacto (dueña: `senior-go-idiomatic`):
+General Go bugs, with severity according to their impact (owner: `senior-go-idiomatic`):
 
-- **Errores**: tragados (`_ = f()`), comparados con `==` en vez de `errors.Is/As`, o devueltos sin contexto en una frontera de paquete (envuelve con `fmt.Errorf("operación: %w", err)`). Un nil tipado devuelto como `error`.
-- **`context.Context`**: no es el primer parámetro o no se propaga en llamadas con I/O; guardado en un struct; `context.Background()` a mitad de una cadena.
-- **Goroutines**: sin un final claro (sin `ctx.Done()`, canal de cierre, `WaitGroup` o `errgroup`); `time.After` dentro de bucles.
-- **Concurrencia**: data races, escrituras concurrentes en mapas, un `sync.Mutex` copiado por valor.
-- **Slices y bucles**: `append` que comparte el backing array; mutar la copia de `range` en vez de `xs[i]`.
-- **Interfaces**: declaradas junto a su única implementación sin seam real, o anchas cuando el consumidor usa uno o dos métodos (muévelas al consumidor y recórtalas).
-- **Estado global**: estado mutable a nivel de paquete, `init()` con efectos laterales, singletons ocultos.
-- **`panic`** como control de flujo fuera de `main` o de la inicialización.
-- **Paquetes** `util`, `common`, `helpers`: cada función va al paquete del concepto que sirve.
+- **Errors**: swallowed (`_ = f()`), compared with `==` instead of `errors.Is/As`, or returned without context at a package boundary (wrap with `fmt.Errorf("operation: %w", err)`). A typed nil returned as `error`.
+- **`context.Context`**: not the first parameter or not propagated in calls with I/O; stored in a struct; `context.Background()` halfway through a chain.
+- **Goroutines**: without a clear end (no `ctx.Done()`, close channel, `WaitGroup` or `errgroup`); `time.After` inside loops.
+- **Concurrency**: data races, concurrent map writes, a `sync.Mutex` copied by value.
+- **Slices and loops**: `append` sharing the backing array; mutating the `range` copy instead of `xs[i]`.
+- **Interfaces**: declared next to their only implementation without a real seam, or wide when the consumer uses one or two methods (move them to the consumer and trim them).
+- **Global state**: mutable package-level state, `init()` with side effects, hidden singletons.
+- **`panic`** as control flow outside `main` or initialization.
+- **Packages** `util`, `common`, `helpers`: each function goes to the package of the concept it serves.
 
-## Paso 4: modelado de dominio (si el cambio toca un paquete de dominio)
+## Step 4: domain modeling (if the change touches a domain package)
 
-Dueña: `ddd-go-idiomatic`. Busca value objects que se pueden construir sin validación, entidades con setters en vez de métodos que revelan intención, agregados referenciados por puntero en vez de por ID, paquetes de dominio que importan `database/sql`, `net/http` o `encoding/json`, y errores del driver (`sql.ErrNoRows`) que se escapan del repositorio. Severidad según impacto; un import de infraestructura filtrado en un repo que adoptó las reglas de la casa es major.
+Owner: `ddd-go-idiomatic`. Look for value objects that can be built without validation, entities with setters instead of intention-revealing methods, aggregates referenced by pointer instead of by ID, domain packages that import `database/sql`, `net/http` or `encoding/json`, and driver errors (`sql.ErrNoRows`) leaking out of the repository. Severity according to impact; a leaked infrastructure import in a repo that adopted the house rules is major.
 
-## Lo que no se reporta
+## What is not reported
 
-Lo que garantizan `gofmt`, `go vet` y el `golangci-lint` configurado en el repo.
+What `gofmt`, `go vet` and the repo's configured `golangci-lint` already guarantee.

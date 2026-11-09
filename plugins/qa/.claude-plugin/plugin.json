@@ -1,7 +1,7 @@
 {
   "name": "qa",
-  "version": "0.2.1",
-  "description": "QA separado del dev, en español: criterios de aceptación con oráculo de uso, diseño de escenarios con técnicas ISTQB, automatización con herramientas existentes (Gherkin, Hurl, Testcontainers, Toxiproxy, Pact, Schemathesis, Playwright), verificación por peldaños con trazabilidad y sello de integridad, clasificación de fallos e inyección de bugs para probar las pruebas. El agente que implementa nunca escribe el oráculo y el QA nunca certifica.",
+  "version": "0.3.0",
+  "description": "QA separated from dev: acceptance criteria with a usage oracle, scenario design with ISTQB techniques, automation with existing tools (Gherkin, Hurl, Testcontainers, Toxiproxy, Pact, Schemathesis, Playwright), verification by rungs with traceability and an integrity seal, failure classification and bug injection to test the tests. The implementing agent never writes the oracle and QA never certifies.",
   "author": {
     "name": "Sebastian Vallejo"
   },
@@ -15,7 +15,6 @@
     "atdd",
     "contract-testing",
     "mutation-testing",
-    "adversarial-testing",
-    "espanol"
+    "adversarial-testing"
   ]
 }

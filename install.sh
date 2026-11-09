@@ -1,22 +1,22 @@
 #!/usr/bin/env bash
-# Instala las skills de uno o varios plugins en la carpeta de skills de una herramienta.
-# Es la vía para Windsurf (que no tiene sistema de plugins) y la alternativa para
-# cualquier herramienta compatible con el estándar Agent Skills.
+# Installs the skills of one or more plugins into a tool's skills folder.
+# It is the route for Windsurf (which has no plugin system) and the alternative for
+# any tool compatible with the Agent Skills standard.
 #
-# Uso:
+# Usage:
 #   ./install.sh --tool <claude|codex|copilot|cursor|windsurf> [--scope user|project]
-#                [--plugins qa,ingenieria,...] [--project-dir DIR] [--link] [--force] [--dry-run]
-#   ./install.sh --dest <carpeta-de-skills> [--plugins ...] [--link] [--force] [--dry-run]
+#                [--plugins qa,engineering,...] [--project-dir DIR] [--link] [--force] [--dry-run]
+#   ./install.sh --dest <skills-folder> [--plugins ...] [--link] [--force] [--dry-run]
 #
-# Por defecto instala todos los plugins, copia (no enlaza) y en el alcance "project"
-# usa el directorio actual. Nunca sobrescribe una skill ajena sin --force.
+# By default it installs every plugin, copies (does not link) and, in the "project" scope,
+# uses the current directory. It never overwrites a skill it did not install without --force.
 
 set -euo pipefail
 
-RAIZ="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TOOL="" SCOPE="project" PLUGINS="" DEST="" PROJECT_DIR="$PWD" LINK=0 FORCE=0 DRY=0
 
-uso() { sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }
+usage() { sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }
 error() { echo "error: $*" >&2; exit 2; }
 
 while [[ $# -gt 0 ]]; do
@@ -29,67 +29,67 @@ while [[ $# -gt 0 ]]; do
     --link) LINK=1; shift ;;
     --force) FORCE=1; shift ;;
     --dry-run) DRY=1; shift ;;
-    -h|--help) uso 0 ;;
-    *) echo "opción desconocida: $1" >&2; uso 2 ;;
+    -h|--help) usage 0 ;;
+    *) echo "unknown option: $1" >&2; usage 2 ;;
   esac
 done
 
 if [[ -z "$DEST" ]]; then
-  [[ -n "$TOOL" ]] || error "indica --tool o --dest"
-  [[ "$SCOPE" == "user" || "$SCOPE" == "project" ]] || error "--scope debe ser user o project"
+  [[ -n "$TOOL" ]] || error "give --tool or --dest"
+  [[ "$SCOPE" == "user" || "$SCOPE" == "project" ]] || error "--scope must be user or project"
   case "$TOOL:$SCOPE" in
     claude:project)   DEST="$PROJECT_DIR/.claude/skills" ;;
     claude:user)      DEST="$HOME/.claude/skills" ;;
     codex:project)    DEST="$PROJECT_DIR/.agents/skills" ;;
     codex:user)       DEST="$HOME/.agents/skills" ;;
     copilot:project)  DEST="$PROJECT_DIR/.github/skills" ;;
-    copilot:user)     error "para Copilot a nivel de usuario instala como plugin: copilot plugin install <plugin>@sv-agent-plugins" ;;
+    copilot:user)     error "for Copilot at user level install the plugin instead: copilot plugin install <plugin>@sv-agent-plugins" ;;
     cursor:project)   DEST="$PROJECT_DIR/.cursor/skills" ;;
     cursor:user)      DEST="$HOME/.cursor/skills" ;;
     windsurf:project) DEST="$PROJECT_DIR/.windsurf/skills" ;;
     windsurf:user)    DEST="$HOME/.codeium/windsurf/skills" ;;
-    *) error "herramienta no soportada: $TOOL (usa --dest para otra carpeta de skills)" ;;
+    *) error "unsupported tool: $TOOL (use --dest for another skills folder)" ;;
   esac
 fi
 
-DISPONIBLES=$(cd "$RAIZ/plugins" && ls -d */ | tr -d '/')
-if [[ -z "$PLUGINS" ]]; then PLUGINS=$(echo "$DISPONIBLES" | tr '\n' ','); fi
+AVAILABLE=$(cd "$ROOT/plugins" && ls -d */ | tr -d '/')
+if [[ -z "$PLUGINS" ]]; then PLUGINS=$(echo "$AVAILABLE" | tr '\n' ','); fi
 
-IFS=',' read -r -a LISTA <<< "$PLUGINS"
+IFS=',' read -r -a LIST <<< "$PLUGINS"
 SKILLS=()
-for p in "${LISTA[@]}"; do
+for p in "${LIST[@]}"; do
   [[ -z "$p" ]] && continue
-  [[ -d "$RAIZ/plugins/$p/skills" ]] || error "plugin desconocido: $p (disponibles: $(echo $DISPONIBLES))"
-  for s in "$RAIZ/plugins/$p/skills"/*/; do
+  [[ -d "$ROOT/plugins/$p/skills" ]] || error "unknown plugin: $p (available: $(echo $AVAILABLE))"
+  for s in "$ROOT/plugins/$p/skills"/*/; do
     [[ -f "$s/SKILL.md" ]] && SKILLS+=("${s%/}")
   done
 done
-[[ ${#SKILLS[@]} -gt 0 ]] || error "no hay skills que instalar"
+[[ ${#SKILLS[@]} -gt 0 ]] || error "no skills to install"
 
-# Comprobación previa: no pisar skills ajenas
+# Pre-check: do not overwrite skills installed by someone else
 for s in "${SKILLS[@]}"; do
-  nombre=$(basename "$s"); destino="$DEST/$nombre"
-  if [[ -e "$destino" && $FORCE -eq 0 ]]; then
-    if [[ ! -f "$destino/.sv-agent-plugins" && ! -L "$destino" ]]; then
-      error "ya existe $destino y no la instaló este repositorio; usa --force para reemplazarla"
+  name=$(basename "$s"); target="$DEST/$name"
+  if [[ -e "$target" && $FORCE -eq 0 ]]; then
+    if [[ ! -f "$target/.sv-agent-plugins" && ! -L "$target" ]]; then
+      error "$target already exists and was not installed by this repository; use --force to replace it"
     fi
   fi
 done
 
-echo "Instalando ${#SKILLS[@]} skills en $DEST ($([[ $LINK -eq 1 ]] && echo enlaces || echo copias))"
-[[ $DRY -eq 1 ]] && { for s in "${SKILLS[@]}"; do echo "  $(basename "$s")"; done; echo "(dry-run: no se escribió nada)"; exit 0; }
+echo "Installing ${#SKILLS[@]} skills into $DEST ($([[ $LINK -eq 1 ]] && echo links || echo copies))"
+[[ $DRY -eq 1 ]] && { for s in "${SKILLS[@]}"; do echo "  $(basename "$s")"; done; echo "(dry-run: nothing was written)"; exit 0; }
 
 mkdir -p "$DEST"
 for s in "${SKILLS[@]}"; do
-  nombre=$(basename "$s"); destino="$DEST/$nombre"
-  rm -rf "$destino"
+  name=$(basename "$s"); target="$DEST/$name"
+  rm -rf "$target"
   if [[ $LINK -eq 1 ]]; then
-    ln -s "$s" "$destino"
+    ln -s "$s" "$target"
   else
-    cp -R "$s" "$destino"
-    find "$destino" -name '__pycache__' -prune -exec rm -rf {} +
-    echo "instalado desde $RAIZ" > "$destino/.sv-agent-plugins"
+    cp -R "$s" "$target"
+    find "$target" -name '__pycache__' -prune -exec rm -rf {} +
+    echo "installed from $ROOT" > "$target/.sv-agent-plugins"
   fi
-  echo "  $nombre"
+  echo "  $name"
 done
-echo "Listo. Reinicia la herramienta o abre una sesión nueva para que detecte las skills."
+echo "Done. Restart the tool or open a new session so it picks up the skills."

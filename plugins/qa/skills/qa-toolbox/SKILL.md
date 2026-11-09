@@ -1,83 +1,83 @@
 ---
 name: qa-toolbox
-description: "Radar de herramientas de QA (adoptar, probar, evaluar, retener) y guía para elegir la herramienta de cada escenario según el peldaño, el artefacto que revisa el humano y el determinismo del ejecutor. Úsala cuando el usuario pregunte \"¿qué herramienta uso para…?\", \"¿Karate o Hurl?\", \"¿cómo pruebo X?\", o cuando qa-test-automation tenga que elegir herramienta para un escenario."
+description: "QA tools radar (adopt, trial, assess, hold) and a guide to choosing the tool for each scenario by rung, by the artifact the human reviews and by how deterministic the runner is. Use it when the user asks \"which tool do I use for…?\", \"Karate or Hurl?\", \"how do I test X?\", or when qa-test-automation has to choose a tool for a scenario."
 license: MIT
 ---
 
-# Toolbox de QA
+# QA toolbox
 
-Responde en español y conserva en inglés los términos técnicos habituales.
+Respond in the user's language; keep common technical terms in English.
 
-Elegir herramienta es elegir qué artefacto revisará el humano y qué tan confiable es quien ejecuta. **No se reinventan librerías**: para cada necesidad hay una herramienta madura; el trabajo del agente es elegirla bien y escribir la plomería.
+Choosing a tool is choosing which artifact the human will review and how reliable the runner is. **Libraries are not reinvented**: for each need there is a mature tool; the agent's job is to choose it well and write the plumbing.
 
-**Analogía:** una caja de herramientas de carpintero. No fabricas un martillo cada vez que clavas; eliges el martillo, el mazo o la pistola de clavos según la madera, y lo que importa es el mueble.
+**Analogy:** a carpenter's toolbox. You do not make a hammer every time you drive a nail; you choose the hammer, the mallet or the nail gun depending on the wood, and what matters is the furniture.
 
-## Criterios de selección
+## Selection criteria
 
-Con agentes escribiendo la plomería, que el humano conozca el lenguaje deja de importar. Importan:
+With agents writing the plumbing, whether the human knows the language stops mattering. What matters:
 
-1. **Legibilidad del artefacto que aprueba el humano**: Gherkin y Hurl se leen sin programar; un test en Go no.
-2. **Determinismo del ejecutor**: mismo estado, mismo resultado; sin esperas fijas ni dependencias del orden.
-3. **Peldaño**: dónde puede correr (ver [../qa-core/referencias/escalera-de-ambientes.md](../qa-core/referencias/escalera-de-ambientes.md)).
-4. **Qué necesita**: ¿la imagen?, ¿controlar la red?, ¿el código? (Solo el dev usa herramientas que necesitan el código.)
-5. **Que produzca JUnit**: sin reporte trazable, `qa-verify` no puede contar.
+1. **Readability of the artifact the human approves**: Gherkin and Hurl can be read without programming; a Go test cannot.
+2. **Runner determinism**: same state, same result; no fixed waits or order dependencies.
+3. **Rung**: where it can run (see [../qa-core/references/environment-ladder.md](../qa-core/references/environment-ladder.md)).
+4. **What it needs**: the image? controlling the network? the code? (Only the dev uses tools that need the code.)
+5. **That it produces JUnit**: without a traceable report, `qa-verify` cannot count.
 
-## Elección por necesidad
+## Choice by need
 
-| Necesidad | Herramienta | Peldaño |
+| Need | Tool | Rung |
 |---|---|---|
-| Regla de negocio legible por el negocio, con tablas de ejemplos | Gherkin + godog (Go), Cucumber (JVM o JS), behave (Python) | 1 |
-| Flujo HTTP de varias peticiones, smoke de staging | Hurl | 1, 3, 4 |
-| Dependencias reales desechables (base, cola, cache) | Testcontainers | 1 |
-| Fallos de red y de dependencias | Toxiproxy | 1 |
-| Terceros: fakes grabados de la realidad, errores provocados | WireMock (grabación y reproducción) | 1 |
-| Comportamiento real del tercero | Learning tests (Hurl o el lenguaje del harness) contra el sandbox | 2 |
-| Compatibilidad entre servicios propios | Pact (modos A, B o D) | 2 |
-| Entradas que nadie escribiría, desde el OpenAPI | Schemathesis | 1, ritmo completo |
-| UI, SDK de navegador, walking skeleton con consumidor web | Playwright | 3, 4 |
-| Combinatoria de parámetros | PICT (pairwise) para generar los ejemplos | diseño |
-| Mutación al nivel de aceptación | `scripts/mutantes.py` + mutantes semánticos | 1 |
-| Integridad y trazabilidad del oráculo | `scripts/sello.py`, `scripts/trazabilidad.py` | todos |
-| Mutación al nivel unitario (dev) | Gremlins (Go) | 0 |
-| Propiedades e invariantes (dev) | rapid (Go), `go test -fuzz` | 0 |
-| Carga | k6 | dedicado |
+| Business rule readable by the business, with example tables | Gherkin + godog (Go), Cucumber (JVM or JS), behave (Python) | 1 |
+| Multi-request HTTP flow, staging smoke test | Hurl | 1, 3, 4 |
+| Real, disposable dependencies (database, queue, cache) | Testcontainers | 1 |
+| Network and dependency failures | Toxiproxy | 1 |
+| Third parties: fakes recorded from reality, triggered errors | WireMock (recording and playback) | 1 |
+| The third party's real behavior | Learning tests (Hurl or the harness language) against the sandbox | 2 |
+| Compatibility between own services | Pact (modes A, B or D) | 2 |
+| Inputs nobody would write, from the OpenAPI | Schemathesis | 1, full cadence |
+| UI, browser SDK, walking skeleton with a web consumer | Playwright | 3, 4 |
+| Parameter combinatorics | PICT (pairwise) to generate the examples | design |
+| Mutation at the acceptance level | `scripts/mutants.py` + semantic mutants | 1 |
+| Oracle integrity and traceability | `scripts/seal.py`, `scripts/traceability.py` | all |
+| Mutation at the unit level (dev) | Gremlins (Go) | 0 |
+| Properties and invariants (dev) | rapid (Go), `go test -fuzz` | 0 |
+| Load | k6 | dedicated |
 
-Recetas de uso en [../test-automation/references/herramientas.md](../qa-test-automation/references/herramientas.md).
+Usage recipes in [../qa-test-automation/references/tools.md](../qa-test-automation/references/tools.md).
 
-## Radar (noviembre de 2026)
+## Radar (November 2026)
 
-Las herramientas cambian rápido: antes de adoptar algo de este radar, verifica su estado actual (versión, mantenimiento, cambios de CLI).
+Tools change fast: before adopting something from this radar, check its current state (version, maintenance, CLI changes).
 
-### Adoptar
-- **Gherkin** como artefacto de aprobación humana de reglas de negocio.
-- **Hurl**: flujos HTTP en texto, independiente del lenguaje, JUnit nativo.
-- **Testcontainers** (Go y otros lenguajes): el peldaño 1.
-- **WireMock**: fakes de terceros grabados y redactados.
-- **rapid** y **`go test -fuzz`** en el lazo interno del dev (Go).
+### Adopt
+- **Gherkin** as the artifact for human approval of business rules.
+- **Hurl**: HTTP flows in text, language-independent, native JUnit.
+- **Testcontainers** (Go and other languages): rung 1.
+- **WireMock**: recorded and redacted third-party fakes.
+- **rapid** and **`go test -fuzz`** in the dev's inner loop (Go).
 
-### Probar
-- **godog**: el ejecutor de Gherkin en Go; la plomería la escribe el agente.
-- **Toxiproxy**: fallos de red en el peldaño 1.
-- **Pact Go v2**: entre servicios propios, en el modo A sin broker; D cuando haya permisos.
-- **Schemathesis**: fuzzing de contrato en el ritmo completo.
-- **Playwright**: walking skeleton con SDK de navegador y UI.
-- **k6**: carga, fuera de la suite funcional.
-- **Gremlins**: mutación unitaria en Go.
+### Trial
+- **godog**: the Gherkin runner in Go; the agent writes the plumbing.
+- **Toxiproxy**: network failures on rung 1.
+- **Pact Go v2**: between own services, in mode A without a broker; D when there are permissions.
+- **Schemathesis**: contract fuzzing in the full cadence.
+- **Playwright**: walking skeleton with a browser SDK, and UI.
+- **k6**: load, outside the functional suite.
+- **Gremlins**: unit-level mutation in Go.
 
-### Evaluar
-- **Agentes de Playwright** (planner, generator, healer): útiles para crear y mantener tests de UI, con una regla: el healer solo toca selectores, nunca aserciones.
-- **Karate**: alternativa a godog + Hurl si el QA prefiere un único DSL para API, mocks y performance; requiere JVM (Java 21 en su versión 2).
-- **Ooze** (mutación en Go): alternativa a Gremlins.
+### Assess
+- **Playwright agents** (planner, generator, healer): useful to create and maintain UI tests, with one rule: the healer only touches selectors, never assertions.
+- **Karate**: an alternative to godog + Hurl if QA prefers a single DSL for API, mocks and performance; requires the JVM (Java 21 in version 2).
+- **Ooze** (mutation in Go): an alternative to Gremlins.
 
-### Retener (no usar en suites nuevas)
-- `testing/quick` de Go: congelado; usa rapid.
-- Forks sin mantenimiento de go-mutesting.
-- **Postman** y similares como **fuente de verdad** de los tests: su formato no se revisa bien en un diff y ata la suite a una GUI. (Exportar una colección a Hurl o usarla para explorar es otra cosa.)
-- **Selenium** para suites nuevas: Playwright cubre el caso con mejor determinismo (auto-wait).
+### Hold (do not use in new suites)
+- Go's `testing/quick`: frozen; use rapid.
+- Unmaintained forks of go-mutesting.
+- **Postman** and similar as the **source of truth** for tests: its format does not review well in a diff and ties the suite to a GUI. (Exporting a collection to Hurl or using it to explore is something else.)
+- **Selenium** for new suites: Playwright covers the case with better determinism (auto-wait).
 
-## Cuándo no usar una herramienta
+## When not to use a tool
 
-- **Toxiproxy en staging compartido**: rompes a otros equipos.
-- **Hurl para lógica compleja de preparación**: si un escenario necesita más de tres llamadas de siembra o lógica condicional, la plomería va en el harness o en pasos de godog.
-- **Pact contra un tercero**: no ejecutará tu contrato y su sandbox no expone estados. Usa learning tests + WireMock; si publica OpenAPI, el contract testing bidireccional es un complemento.
-- **Mocks escritos a mano de un tercero**, sin learning test que los respalde: un mock que solo sabe lo que creías es la causa del caso del token de PayPal.
+- **Toxiproxy in shared staging**: you break other teams.
+- **Hurl for complex setup logic**: if a scenario needs more than three seeding calls or conditional logic, the plumbing goes in the harness or in godog steps.
+- **Pact against a third party**: it will not run your contract and its sandbox does not expose states. Use learning tests + WireMock; if it publishes an OpenAPI, bi-directional contract testing is a complement.
+- **Hand-written mocks of a third party** with no learning test behind them: a mock that only knows what you believed is the cause of the PayPal token case.

@@ -1,0 +1,1 @@
+I want to explore an idea: an app to sell tickets for mid-sized concerts in Latin America, with numbered seats and card payment. I have no traffic or user data at all; it is an exploration to decide whether we build a PoC. How would you design it?

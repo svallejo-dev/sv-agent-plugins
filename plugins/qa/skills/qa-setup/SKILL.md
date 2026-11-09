@@ -1,88 +1,88 @@
 ---
 name: qa-setup
-description: "Configura el plugin qa en un repo: modo (solo o dúo), barrera de información, dónde viven los tests de aceptación, qué peldaños de la escalera existen y con qué script se ejecuta cada uno, la comprobación de caja negra y el presupuesto de mutantes. Escribe docs/agentes/qa.md. Úsala solo cuando el usuario la pida explícitamente."
+description: "Sets up the qa plugin in a repo: mode (solo or duo), information barrier, where the acceptance tests live, which rungs of the ladder exist and which script runs each one, the black-box check and the mutant budget. Writes docs/agents/qa.md. Use it only when the user explicitly asks for it."
 license: MIT
 ---
 
-# Setup de QA
+# QA setup
 
-Responde en español y conserva en inglés los términos técnicos habituales.
+Respond in the user's language; keep common technical terms in English.
 
-Escribe `docs/agentes/qa.md`, la configuración que leen todas las skills de `qa`. Sin ese archivo, las demás se detienen y piden ejecutar la skill `qa-setup`.
+Writes `docs/agents/qa.md`, the configuration every skill in `qa` reads. Without that file, the others stop and ask to run the `qa-setup` skill.
 
-**Por qué la configuración fija comandos, y por qué se sella:** `qa-verify` ejecuta exactamente los scripts declarados aquí, no los improvisa. Un agente que decide en el momento cómo correr la suite puede, sin mala intención, elegir el comando que da verde (un subconjunto, un tag excluido). Por eso los comandos viven en scripts dentro de la carpeta de aceptación, y tanto esos scripts como este archivo quedan bajo el sello de cada feature: cambiarlos es cambiar el oráculo, y queda a la vista.
+**Why the configuration pins commands, and why it is sealed:** `qa-verify` runs exactly the scripts declared here; it does not improvise them. An agent that decides on the spot how to run the suite can, with no bad intent, pick the command that gives green (a subset, an excluded tag). That is why the commands live in scripts inside the acceptance folder, and both those scripts and this file sit under each feature's seal: changing them is changing the oracle, and it shows.
 
-## Proceso
+## Process
 
-1. Lee `docs/agentes/tracker.md` (de `ingenieria-setup`) para saber dónde viven las specs. Si no existe, el tracker por defecto es `.scratch/`; dilo en una línea.
-2. Explora el repo: carpetas de tests de aceptación, `Dockerfile`, `docker-compose`, Makefile, contratos OpenAPI o AsyncAPI, archivos `.feature`, `.hurl`, configuración de Playwright. Propón valores a partir de lo que encuentres.
-3. Pregunta, en una sola ronda, lo que no puedas deducir. Usa el mecanismo de preguntas con opciones de tu herramienta si existe (AskUserQuestion en Claude Code); si no, pregunta en texto numerando las opciones:
-   - **Modo**: `solo` o `duo`. Ver [../qa-core/referencias/modelo-de-roles.md](../qa-core/referencias/modelo-de-roles.md).
-   - **Barrera de información**: N1, N2 o N3. Recomienda N2 si el modo es solo y el trabajo es crítico.
-   - **Peldaños disponibles**. Ver [../qa-core/referencias/escalera-de-ambientes.md](../qa-core/referencias/escalera-de-ambientes.md). Un peldaño que la plataforma no ofrece se marca `no disponible`, nunca se omite.
-   - **Rama base** contra la que se compara el sello (normalmente `origin/main`).
-   - **Presupuesto de tiempo** para los mutantes.
-4. Escribe el archivo con la plantilla. Ningún secreto en él: las credenciales se referencian por nombre de variable de entorno.
-5. Añade la carpeta de reportes al `.gitignore`. Crea la carpeta de aceptación con un `README.md` de una línea: su contenido está sellado y el dev escala en vez de editar.
-6. Dile al usuario el siguiente paso: `qa-acceptance-criteria` sobre la spec de la feature.
+1. Read `docs/agents/tracker.md` (from `engineering-setup`) to know where the specs live. If it does not exist, the default tracker is `.scratch/`; say so in one line.
+2. Explore the repo: acceptance test folders, `Dockerfile`, `docker-compose`, Makefile, OpenAPI or AsyncAPI contracts, `.feature` and `.hurl` files, Playwright configuration. Propose values from what you find.
+3. Ask, in a single round, what you cannot deduce. Use your tool's multiple-choice question mechanism if it has one (AskUserQuestion in Claude Code); if not, ask in text and number the options:
+   - **Mode**: `solo` or `duo`. See [../qa-core/references/role-model.md](../qa-core/references/role-model.md).
+   - **Information barrier**: N1, N2 or N3. Recommend N2 if the mode is solo and the work is critical.
+   - **Available rungs**. See [../qa-core/references/environment-ladder.md](../qa-core/references/environment-ladder.md). A rung the platform does not offer is marked `not available`, never omitted.
+   - **Base branch** the seal is compared against (usually `origin/main`).
+   - **Time budget** for mutants.
+4. Write the file from the template. No secrets in it: credentials are referenced by environment variable name.
+5. Add the reports folder to `.gitignore`. Create the acceptance folder with a one-line `README.md`: its content is sealed and the dev escalates instead of editing.
+6. Tell the user the next step: `qa-acceptance-criteria` on the feature's spec.
 
-## Contrato de los scripts de peldaño
+## Contract of the rung scripts
 
-Cada peldaño se ejecuta con un script en `<Aceptación>/bin/` (por ejemplo `peldano-1.sh <feature>`). Si aún no existen, `qa-test-automation` los crea en su paso 1. Todo script de peldaño:
+Each rung runs with a script in `<Acceptance>/bin/` (for example `rung-1.sh <feature>`). If they do not exist yet, `qa-test-automation` creates them in its step 1. Every rung script:
 
-- termina con exit 0 solo si todo está en verde;
-- escribe sus reportes JUnit **solo** en el directorio que recibe en `$QA_REPORTES` (vacío y propio de esa ejecución; lo crea `qa-verify`);
-- no escribe nada dentro de `<Aceptación>/` (romperías el sello);
-- si construye la imagen del servicio, lo hace desde el directorio actual y con el tag `$QA_IMAGEN_TAG` si está definido (lo usa `qa-test-the-tests` para no mezclar imágenes de mutantes con la real);
-- no acepta argumentos que filtren escenarios.
+- exits 0 only if everything is green;
+- writes its JUnit reports **only** to the directory it receives in `$QA_REPORTS` (empty and owned by that run; `qa-verify` creates it);
+- writes nothing inside `<Acceptance>/` (it would break the seal);
+- if it builds the service image, it does so from the current directory and with the tag `$QA_IMAGE_TAG` if defined (`qa-test-the-tests` uses it so mutant images do not mix with the real one);
+- accepts no arguments that filter scenarios.
 
-## Plantilla de `docs/agentes/qa.md`
+## Template for `docs/agents/qa.md`
 
 ```markdown
-# Configuración de QA
+# QA configuration
 
-Modo: solo | duo
-Barrera: N1 | N2 | N3
-Rama base: origin/main
+Mode: solo | duo
+Barrier: N1 | N2 | N3
+Base branch: origin/main
 Tracker: .scratch/
-Aceptación: acceptance/            # una subcarpeta por feature + bin/ con los scripts de peldaño
-Sello: acceptance/<feature>/.qa-sello.json
-Reportes: acceptance-reportes/     # fuera de acceptance/; ignorado por git; una subcarpeta por feature y ejecución
+Acceptance: acceptance/            # one subfolder per feature + bin/ with the rung scripts
+Seal: acceptance/<feature>/.qa-seal.json
+Reports: acceptance-reports/       # outside acceptance/; ignored by git; one subfolder per feature and run
 
-## Peldaños
+## Rungs
 
-| Peldaño | Disponible | Script | Variables |
+| Rung | Available | Script | Variables |
 |---|---|---|---|
-| 1 hermético | sí | `acceptance/bin/peldano-1.sh <feature>` | el harness fija BASE_URL |
-| 2 contrato | sí | `acceptance/bin/peldano-2.sh <feature>` | URLs de sandbox, credenciales por nombre de variable |
-| 3 integrado aislado | no disponible | — | — |
-| 4 staging | sí | `acceptance/bin/peldano-4.sh <feature>` | STAGING_URL |
-| 5 producción | no disponible | — | — |
+| 1 hermetic | yes | `acceptance/bin/rung-1.sh <feature>` | the harness sets BASE_URL |
+| 2 contract | yes | `acceptance/bin/rung-2.sh <feature>` | sandbox URLs, credentials by variable name |
+| 3 isolated integrated | not available | — | — |
+| 4 staging | yes | `acceptance/bin/rung-4.sh <feature>` | STAGING_URL |
+| 5 production | not available | — | — |
 
-## Caja negra
+## Black box
 
-Los tests de aceptación en Go viven en un **módulo propio** (`acceptance/go.mod`): el compilador impide importar paquetes `internal/` de otro módulo.
-Comprobación (debe salir vacía y con exit 0 de `go list`):
-`cd acceptance && go list -deps -test ./... > /tmp/deps.txt && ! grep -E '^<modulo-de-produccion>(/|$)' /tmp/deps.txt`
+Acceptance tests in Go live in **their own module** (`acceptance/go.mod`): the compiler prevents importing `internal/` packages from another module.
+Check (must print nothing, with exit 0 from `go list`):
+`cd acceptance && go list -deps -test ./... > /tmp/deps.txt && ! grep -E '^<production-module>(/|$)' /tmp/deps.txt`
 
-## Construcción del artefacto
+## Artifact build
 
-Imagen del servicio: `docker build -t ${QA_IMAGEN_TAG:-<servicio>:qa} .`
+Service image: `docker build -t ${QA_IMAGE_TAG:-<service>:qa} .`
 
-## Contratos
+## Contracts
 
-| Dependencia | Tipo | Cómo se verifica |
+| Dependency | Type | How it is verified |
 |---|---|---|
-| <servicio propio> | Pact modo A, B o D | … |
-| <tercero> | learning tests + WireMock | … |
+| <own service> | Pact mode A, B or D | … |
+| <third party> | learning tests + WireMock | … |
 
-## Mutantes
+## Mutants
 
-Comando de suite: `acceptance/bin/peldano-1.sh <feature>`
-Limpieza tras cada mutante: `docker rmi -f $QA_IMAGEN_TAG`
-Timeout por mutante (s): 900
-Presupuesto total: <minutos>; si no cabe antes del PR, se ejecuta en el nocturno
-Rutas prohibidas para mutantes: acceptance/ .scratch/ docs/agentes/
+Suite command: `acceptance/bin/rung-1.sh <feature>`
+Cleanup after each mutant: `docker rmi -f $QA_IMAGE_TAG`
+Timeout per mutant (s): 900
+Total budget: <minutes>; if it does not fit before the PR, it runs nightly
+Forbidden paths for mutants: acceptance/ .scratch/ docs/agents/
 ```
 
-Para repos que no son Go, la comprobación de caja negra usa el analizador de dependencias del lenguaje, o un `grep` de las rutas de import de producción con verificación del código de salida. Una comprobación que falla al ejecutarse **no** cuenta como superada.
+For repos that are not Go, the black-box check uses the language's dependency analyzer, or a `grep` of the production import paths with the exit code checked. A check that fails to run does **not** count as passed.

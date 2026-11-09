@@ -1,0 +1,5 @@
+interface:
+  display_name: "Grill with docs"
+  short_description: "Sharpens an idea by interview and leaves a glossary and ADRs"
+policy:
+  allow_implicit_invocation: false

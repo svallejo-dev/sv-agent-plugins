@@ -1,7 +1,7 @@
 {
   "name": "general",
-  "version": "0.3.2",
-  "description": "Skills de propósito general en español: por dónde empezar (enrutador de flujos y plantilla de AGENTS.md), interrogar planes (grilling), enseñar con analogías (teach), escribir para agentes, traspasos entre sesiones e investigación con fuentes primarias. Adaptadas de mattpocock/skills (MIT).",
+  "version": "0.4.0",
+  "description": "General-purpose skills: where to start (workflow router and AGENTS.md template), grilling a plan, teaching with analogies, writing for agents, handoffs between sessions and research from primary sources. Adapted from mattpocock/skills (MIT).",
   "author": {
     "name": "Sebastian Vallejo"
   },
@@ -13,6 +13,6 @@
     "teach",
     "prompting",
     "research",
-    "espanol"
+    "workflow"
   ]
 }

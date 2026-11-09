@@ -1,17 +1,18 @@
 # general
 
-Skills de propósito general del marketplace `sv-agent-plugins`, en español: `por-donde-empiezo`, `grilling`, `teach`, `writing-for-agents`, `handoff` y `research`.
+General-purpose skills of the `sv-agent-plugins` marketplace: `where-to-start`, `grilling`, `teach`, `writing-for-agents`, `handoff` and `research`.
 
-- **`por-donde-empiezo`** es el mapa de todos los plugins: qué skill o flujo usar según la situación, qué hacer al terminar una fase (seguir, limpiar, traspasar, delegar o compactar) y una plantilla de `AGENTS.md` que deja las reglas de estos plugins en tu repositorio. Inspirada en `ask-matt` de mattpocock/skills, reescrita sobre los plugins de este repositorio. No dependen de ningún otro plugin. Adaptadas de [mattpocock/skills](https://github.com/mattpocock/skills) (MIT).
+- **`where-to-start`** is the map of every plugin: which skill or workflow to use depending on the situation, what to do when a phase ends (continue, clean up, hand off, delegate or compact) and an `AGENTS.md` template that puts these plugins' rules into your repository. Inspired by `ask-matt` from mattpocock/skills, rewritten around the plugins in this repository.
 
-## Instalación
+They do not depend on any other plugin. Adapted from [mattpocock/skills](https://github.com/mattpocock/skills) (MIT).
 
-Ver el [README del repositorio](../../README.md#instalación) para Claude Code, Codex, GitHub Copilot, Cursor y Windsurf. En resumen, con Claude Code:
+## Installation
+
+See the [repository README](../../README.md#installation) for Claude Code, Codex, GitHub Copilot, Cursor and Windsurf. In short, with Claude Code:
 
 ```bash
 claude plugin marketplace add svallejo-dev/sv-agent-plugins
 claude plugin install general@sv-agent-plugins
 ```
 
-
-Todas las skills responden en español y conservan en inglés los términos técnicos habituales. Licencia MIT.
+All skills respond in the user's language. MIT license.

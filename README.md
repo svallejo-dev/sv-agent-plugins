@@ -1,275 +1,244 @@
 # sv-agent-plugins
 
-[![validar](https://github.com/svallejo-dev/sv-agent-plugins/actions/workflows/validar.yml/badge.svg)](https://github.com/svallejo-dev/sv-agent-plugins/actions/workflows/validar.yml)
+[![validate](https://github.com/svallejo-dev/sv-agent-plugins/actions/workflows/validate.yml/badge.svg)](https://github.com/svallejo-dev/sv-agent-plugins/actions/workflows/validate.yml)
 
-**Español** · [English](#english)
+Engineering plugins for coding agents that work in **Claude Code, OpenAI Codex, GitHub Copilot, Cursor and Windsurf**. They are built on two open standards: [Agent Skills](https://agentskills.io) (each skill is a folder with a `SKILL.md`) and [Agent Plugins](https://agent-plugins.org) (packaging), plus each tool's native manifests.
 
-Plugins de ingeniería para agentes de código, en español, que funcionan en **Claude Code, OpenAI Codex, GitHub Copilot, Cursor y Windsurf**. Están construidos sobre dos estándares abiertos: [Agent Skills](https://agentskills.io) (cada skill es una carpeta con un `SKILL.md`) y [Agent Plugins](https://agent-plugins.org) (empaquetado). Además incluyen los manifiestos propios de cada herramienta.
+The skills are written in English and **answer in the user's language**: ask in Spanish, get the answer in Spanish.
 
-| Plugin | Para qué | Skills |
+| Plugin | What it is for | Skills |
 |---|---|---|
-| [`general`](plugins/general) | Por dónde empezar, interrogar planes, enseñar con analogías, escribir para agentes, traspasos e investigación | `por-donde-empiezo` `grilling` `teach` `writing-for-agents` `handoff` `research` |
-| [`ingenieria`](plugins/ingenieria) | Flujo de ingeniería agnóstico al lenguaje: spec, tickets, TDD, diagnóstico, diseño, code review, commits y PRs | `ingenieria-setup` `grill-with-docs` `domain-modeling` `to-spec` `to-tickets` `tdd` `diagnosing-bugs` `codebase-design` `code-review` `git-commit` `create-pr` |
-| [`qa`](plugins/qa) | QA separado del dev: el agente que implementa nunca escribe el oráculo y ningún agente certifica | `qa-setup` `qa-acceptance-criteria` `qa-test-design` `qa-test-automation` `qa-verify` `qa-test-the-tests` `qa-toolbox` `qa-core` |
-| [`arquitectura`](plugins/arquitectura) | System design a gran escala partiendo de lo que existe, con capacidad calculada y red team | `system-design` `design-stress-test` `capacity-estimation` `strategic-design` `business-archetypes` `building-blocks` |
-| [`go`](plugins/go) | Go idiomático, reglas de diseño, DDD en Go, simplificación sin cambiar comportamiento y las skills de rol del contrato de lenguajes | `senior-go-idiomatic` `go-design-rules` `ddd-go-idiomatic` `go-simplify` `go-review` `go-testing` `go-debugging` `go-design` |
+| [`general`](plugins/general) | Where to start, grilling a plan, teaching with analogies, writing for agents, handoffs and research | `where-to-start` `grilling` `teach` `writing-for-agents` `handoff` `research` |
+| [`engineering`](plugins/engineering) | Language-agnostic engineering workflow: spec, tickets, TDD, diagnosis, design, code review, commits and PRs | `engineering-setup` `grill-with-docs` `domain-modeling` `to-spec` `to-tickets` `tdd` `diagnosing-bugs` `codebase-design` `code-review` `git-commit` `create-pr` |
+| [`qa`](plugins/qa) | QA separated from dev: the implementing agent never writes the oracle and no agent certifies | `qa-setup` `qa-acceptance-criteria` `qa-test-design` `qa-test-automation` `qa-verify` `qa-test-the-tests` `qa-toolbox` `qa-core` |
+| [`architecture`](plugins/architecture) | Large-scale system design starting from what exists, with computed capacity and a red team | `system-design` `design-stress-test` `capacity-estimation` `strategic-design` `business-archetypes` `building-blocks` |
+| [`go`](plugins/go) | Idiomatic Go, design rules, DDD in Go, behavior-preserving simplification and the role skills of the language contract | `senior-go-idiomatic` `go-design-rules` `ddd-go-idiomatic` `go-simplify` `go-review` `go-testing` `go-debugging` `go-design` |
 
-## Compatibilidad
+## Compatibility
 
-| Herramienta | Cómo se instala | Estado |
+| Tool | How it installs | Status |
 |---|---|---|
-| **Claude Code** | Marketplace de plugins (`.claude-plugin/`) | Verificado: Claude Code 2.1.319 instala los 5 plugins y las 39 skills |
-| **OpenAI Codex** | Marketplace de plugins (`.agents/plugins/`, `plugin.json` de Agent Plugins) | Verificado: codex-cli 0.167.0 instala los 5 plugins y las 39 skills |
-| **GitHub Copilot** (CLI y VS Code) | Marketplace de plugins (`.github/plugin/`, `plugin.json` de Agent Plugins) | Verificado: Copilot CLI 1.0.107 instala los 5 plugins y las 39 skills |
-| **Cursor** | Plugin (`.cursor-plugin/`, Agent Plugins) o carpeta de skills | Según su documentación; no probado en Cursor |
-| **Windsurf** | Carpeta de skills con `install.sh` (Windsurf no tiene sistema de plugins) | Instalador probado; no probado dentro de Windsurf |
-| Otras herramientas compatibles con Agent Skills | `install.sh --dest <carpeta>` | — |
+| **Claude Code** | Plugin marketplace (`.claude-plugin/`) | Verified: Claude Code installs the 5 plugins and 39 skills |
+| **OpenAI Codex** | Plugin marketplace (`.agents/plugins/`, Agent Plugins `plugin.json`) | Verified: codex-cli installs the 5 plugins and 39 skills |
+| **GitHub Copilot** (CLI and VS Code) | Plugin marketplace (`.github/plugin/`, Agent Plugins `plugin.json`) | Verified: Copilot CLI installs the 5 plugins and 39 skills |
+| **Cursor** | Plugin (`.cursor-plugin/`, Agent Plugins) or skills folder | Per its documentation; not tested inside Cursor |
+| **Windsurf** | Skills folder with `install.sh` (Windsurf has no plugin system) | Installer tested; not tested inside Windsurf |
+| Other tools compatible with Agent Skills | `install.sh --dest <folder>` | — |
 
-## Instalación
+## Installation
 
-Cada herramienta tiene dos formas: **todos los plugins de una vez** o **solo los que elijas**. Los nombres de los plugins son `general`, `ingenieria`, `qa`, `arquitectura` y `go`. Después de instalar, abre una sesión nueva para que la herramienta cargue las skills.
+Each tool has two ways: **all the plugins at once** or **only the ones you choose**. The plugin names are `general`, `engineering`, `qa`, `architecture` and `go`. After installing, open a new session so the tool loads the skills.
 
 ### Claude Code
 
-Todos los plugins:
+All the plugins:
 
 ```bash
-claude plugin marketplace add svallejo-dev/sv-agent-plugins; for p in general ingenieria qa arquitectura go; do claude plugin install "$p@sv-agent-plugins"; done
+claude plugin marketplace add svallejo-dev/sv-agent-plugins; for p in general engineering qa architecture go; do claude plugin install "$p@sv-agent-plugins"; done
 ```
 
-Solo algunos:
+Only some:
 
 ```bash
 claude plugin marketplace add svallejo-dev/sv-agent-plugins
 claude plugin install qa@sv-agent-plugins
 ```
 
-Dentro de una sesión: `/plugin marketplace add svallejo-dev/sv-agent-plugins` y luego `/plugin install <plugin>@sv-agent-plugins` por cada plugin (o elígelos en el menú de `/plugin`). En Claude Code las skills llevan el nombre del plugin como prefijo: `qa:qa-verify`, `ingenieria:tdd`.
+Inside a session: `/plugin marketplace add svallejo-dev/sv-agent-plugins` and then `/plugin install <plugin>@sv-agent-plugins` for each plugin (or pick them in the `/plugin` menu). In Claude Code skills carry the plugin name as a prefix: `qa:qa-verify`, `engineering:tdd`.
 
 ### OpenAI Codex
 
-Todos los plugins:
+All the plugins:
 
 ```bash
-codex plugin marketplace add svallejo-dev/sv-agent-plugins; for p in general ingenieria qa arquitectura go; do codex plugin add "$p@sv-agent-plugins"; done
+codex plugin marketplace add svallejo-dev/sv-agent-plugins; for p in general engineering qa architecture go; do codex plugin add "$p@sv-agent-plugins"; done
 ```
 
-Solo algunos:
+Only some:
 
 ```bash
 codex plugin marketplace add svallejo-dev/sv-agent-plugins
 codex plugin add qa@sv-agent-plugins
 ```
 
-También puedes instalarlos desde el navegador de plugins de la app o de la CLI (`/plugins`).
+You can also install them from the plugin browser in the app or the CLI (`/plugins`).
 
 ### GitHub Copilot
 
-CLI, todos los plugins:
+CLI, all the plugins:
 
 ```bash
-copilot plugin marketplace add svallejo-dev/sv-agent-plugins; for p in general ingenieria qa arquitectura go; do copilot plugin install "$p@sv-agent-plugins"; done
+copilot plugin marketplace add svallejo-dev/sv-agent-plugins; for p in general engineering qa architecture go; do copilot plugin install "$p@sv-agent-plugins"; done
 ```
 
-CLI, solo algunos:
+CLI, only some:
 
 ```bash
 copilot plugin marketplace add svallejo-dev/sv-agent-plugins
 copilot plugin install qa@sv-agent-plugins
 ```
 
-En VS Code, añade el repositorio como marketplace de agent plugins en la configuración de Copilot Chat y búscalo con `@agentPlugins` en la vista de Extensiones.
+In VS Code, add the repository as an agent plugins marketplace in the Copilot Chat settings and search for it with `@agentPlugins` in the Extensions view.
 
-Solo las skills, en un repositorio concreto (las copia a `<repo>/.github/skills/`):
+Only the skills, in a specific repository (it copies them to `<repo>/.github/skills/`):
 
 ```bash
-./install.sh --tool copilot --project-dir <repo>                       # todas
-./install.sh --tool copilot --project-dir <repo> --plugins qa          # algunas
+./install.sh --tool copilot --project-dir <repo>                       # all
+./install.sh --tool copilot --project-dir <repo> --plugins qa          # some
 ```
 
 ### Cursor
 
-Desde un clon de este repositorio:
+From a clone of this repository:
 
 ```bash
 git clone https://github.com/svallejo-dev/sv-agent-plugins && cd sv-agent-plugins
 ```
 
-Todos los plugins, como plugins locales (después recarga la ventana):
+All the plugins, as local plugins (then reload the window):
 
 ```bash
-mkdir -p ~/.cursor/plugins/local; for p in general ingenieria qa arquitectura go; do ln -sfn "$PWD/plugins/$p" ~/.cursor/plugins/local/$p; done
+mkdir -p ~/.cursor/plugins/local; for p in general engineering qa architecture go; do ln -sfn "$PWD/plugins/$p" ~/.cursor/plugins/local/$p; done
 ```
 
-Solo algunos: `ln -sfn "$PWD/plugins/qa" ~/.cursor/plugins/local/qa`.
+Only some: `ln -sfn "$PWD/plugins/qa" ~/.cursor/plugins/local/qa`.
 
-Solo las skills (también sirve para `cursor-agent` en terminal, que hoy no registra las skills de los plugins):
+Only the skills (it also works for `cursor-agent` in the terminal, which today does not register plugin skills):
 
 ```bash
-./install.sh --tool cursor --scope user                 # todas
-./install.sh --tool cursor --scope user --plugins qa    # algunas
+./install.sh --tool cursor --scope user                 # all
+./install.sh --tool cursor --scope user --plugins qa    # some
 ```
 
-Para un equipo: importa este repositorio en el panel de plugins del equipo; Cursor lee `.cursor-plugin/marketplace.json` y muestra los cinco plugins.
+For a team: import this repository in the team's plugin panel; Cursor reads `.cursor-plugin/marketplace.json` and shows the five plugins.
 
 ### Windsurf
 
-Windsurf no tiene sistema de plugins: lee skills de `.windsurf/skills/` (proyecto) y `~/.codeium/windsurf/skills/` (usuario).
+Windsurf has no plugin system: it reads skills from `.windsurf/skills/` (project) and `~/.codeium/windsurf/skills/` (user).
 
 ```bash
 git clone https://github.com/svallejo-dev/sv-agent-plugins && cd sv-agent-plugins
-./install.sh --tool windsurf --scope user                          # todos los plugins
-./install.sh --tool windsurf --scope user --plugins qa,ingenieria  # algunos
+./install.sh --tool windsurf --scope user                           # all the plugins
+./install.sh --tool windsurf --scope user --plugins qa,engineering  # some
 ```
 
-### Todas las herramientas a la vez (solo skills)
+### Every tool at once (skills only)
 
-Si usas varias herramientas en la misma máquina, desde el clon:
+If you use several tools on the same machine, from the clone:
 
 ```bash
 for t in claude codex cursor windsurf; do ./install.sh --tool "$t" --scope user --link; done
 ```
 
-`--link` crea enlaces simbólicos al clon, así un `git pull` actualiza todas las herramientas a la vez. Si en Claude Code, Codex o Copilot ya instalaste los plugins por marketplace, no instales además sus skills sueltas: tendrías cada skill dos veces.
+`--link` creates symbolic links to the clone, so a `git pull` updates every tool at once. If you already installed the plugins through the marketplace in Claude Code, Codex or Copilot, do not also install their loose skills: you would have every skill twice.
 
 ### `install.sh`
 
 ```
 ./install.sh --tool <claude|codex|copilot|cursor|windsurf> [--scope user|project] [--plugins a,b] [--project-dir DIR] [--link] [--force] [--dry-run]
-./install.sh --dest <carpeta-de-skills> [--plugins a,b]
+./install.sh --dest <skills-folder> [--plugins a,b]
 ```
 
-- Sin `--plugins`, instala **todos** los plugins.
-- Copia por defecto; `--link` crea enlaces simbólicos para recibir actualizaciones con `git pull`.
-- Nunca sobrescribe una skill ajena sin `--force`; `--dry-run` muestra qué instalaría.
-- Instala siempre el plugin completo: algunas skills dependen de una hermana (todas las `qa-*` usan `qa-core`).
+- Without `--plugins`, it installs **all** the plugins.
+- It copies by default; `--link` creates symbolic links to receive updates with `git pull`.
+- It never overwrites a skill it did not install without `--force`; `--dry-run` shows what it would install.
+- Always install the whole plugin: some skills depend on a sibling (every `qa-*` uses `qa-core`).
 
-## Actualizar
+## Updating
 
-Cuando el repositorio publica cambios, cada plugin sube de versión; sin eso, ninguna herramienta los detecta.
+When the repository publishes changes, each plugin's version goes up; without that, no tool detects them.
 
 ```bash
-# Claude Code (después, abre una sesión nueva)
-claude plugin marketplace update sv-agent-plugins; for p in general ingenieria qa arquitectura go; do claude plugin update "$p@sv-agent-plugins"; done
+# Claude Code (then open a new session)
+claude plugin marketplace update sv-agent-plugins; for p in general engineering qa architecture go; do claude plugin update "$p@sv-agent-plugins"; done
 # OpenAI Codex
 codex plugin marketplace upgrade sv-agent-plugins
 # GitHub Copilot CLI
-copilot plugin marketplace update sv-agent-plugins; for p in general ingenieria qa arquitectura go; do copilot plugin update "$p@sv-agent-plugins"; done
-# Cursor, Windsurf o install.sh con --link: basta con actualizar el clon
-git -C <ruta-del-clon> pull
-# install.sh sin --link: actualiza el clon y vuelve a ejecutar el mismo install.sh
+copilot plugin marketplace update sv-agent-plugins; for p in general engineering qa architecture go; do copilot plugin update "$p@sv-agent-plugins"; done
+# Cursor, Windsurf or install.sh with --link: updating the clone is enough
+git -C <clone-path> pull
+# install.sh without --link: update the clone and run the same install.sh again
 ```
 
-## Usar las reglas en tu proyecto
+### Migrating from the Spanish plugin names
 
-La skill `por-donde-empiezo` tiene una plantilla de `AGENTS.md` con las reglas y los flujos de estos plugins. Pídele "deja las reglas de estos plugins en el repo" y la copia a tu `AGENTS.md`, quitando los plugins que no uses. Codex, Copilot, Cursor y Windsurf leen `AGENTS.md` directamente. Claude Code, en sus versiones recientes, también lo carga, pero solo cuando el proyecto no tiene `CLAUDE.md`; por eso la skill deja en `CLAUDE.md` una línea `@AGENTS.md`, que lo importa en cualquier caso. La plantilla está en [plugins/general/skills/por-donde-empiezo/references/plantilla-AGENTS.md](plugins/general/skills/por-donde-empiezo/references/plantilla-AGENTS.md).
-
-## Reglas globales de comportamiento
-
-Las skills se cargan bajo demanda; las reglas de **comportamiento** (cómo quieres que el agente te trate en cualquier proyecto) van en el archivo de instrucciones personales de cada herramienta, que se carga siempre. [plantillas/reglas-globales.md](plantillas/reglas-globales.md) es un punto de partida: desacuerdo con fundamento y siempre con alternativas, evidencia en vez de adjetivos, señalar el lenguaje que deja la puerta abierta ("creo", "me parece"), sin halagos.
-
-Una sola fuente (`~/.agents/AGENTS.md`) conectada con todas las herramientas:
+Until November 2026 the plugins were written in Spanish and two of them had Spanish names: `ingenieria` (now `engineering`) and `arquitectura` (now `architecture`); the skills `por-donde-empiezo` and `ingenieria-setup` are now `where-to-start` and `engineering-setup`. A renamed plugin is a new plugin for the tools, so uninstall the old ones and install the new ones:
 
 ```bash
-tools/instalar-reglas-globales.sh            # crea la fuente desde la plantilla si no existe y la conecta
-"${EDITOR:-nano}" ~/.agents/AGENTS.md        # ajústala a tu gusto; los cambios llegan a todas las herramientas
+# Claude Code
+claude plugin marketplace update sv-agent-plugins
+claude plugin uninstall ingenieria@sv-agent-plugins; claude plugin uninstall arquitectura@sv-agent-plugins
+claude plugin install engineering@sv-agent-plugins; claude plugin install architecture@sv-agent-plugins
+for p in general qa go; do claude plugin update "$p@sv-agent-plugins"; done
+# Codex and Copilot: the same with `codex plugin remove`/`codex plugin add` and `copilot plugin uninstall`/`copilot plugin install`
+# install.sh: delete the old folders (ingenieria-setup, por-donde-empiezo) from the skills folder and run install.sh again
 ```
 
-| Herramienta | Archivo global | Cómo la conecta el script |
+Repositories that already use the plugins keep working, but the files the skills write changed names: `docs/agentes/` → `docs/agents/`, `GLOSARIO.md` → `GLOSSARY.md`, and the QA artifacts (`criterios.md` → `criteria.md`, `escenarios.md` → `scenarios.md`, `ESC-NN` → `SC-NN`, `H-NN` → `F-NN`, `.qa-sello.json` → `.qa-seal.json`). Rename them, or rerun `engineering-setup` and `qa-setup`. Existing seals must be recreated with `seal.py seal`: the seal format changed version.
+
+## Using the rules in your project
+
+The `where-to-start` skill has an `AGENTS.md` template with these plugins' rules and workflows. Ask it to "put these plugins' rules in the repo" and it copies them into your `AGENTS.md`, removing the plugins you do not use. Codex, Copilot, Cursor and Windsurf read `AGENTS.md` directly. Claude Code, in its recent versions, also loads it, but only when the project has no `CLAUDE.md`; that is why the skill puts an `@AGENTS.md` line in `CLAUDE.md`, which imports it in every case. The template is at [plugins/general/skills/where-to-start/references/AGENTS-template.md](plugins/general/skills/where-to-start/references/AGENTS-template.md).
+
+## Global behavior rules
+
+Skills load on demand; **behavior** rules (how you want the agent to treat you in any project) go in each tool's personal instructions file, which is always loaded. [templates/global-rules.md](templates/global-rules.md) is a starting point: grounded disagreement that always comes with alternatives, evidence instead of adjectives, flagging language that leaves the door open ("I think", "it seems to me"), no flattery.
+
+A single source (`~/.agents/AGENTS.md`) connected to every tool:
+
+```bash
+tools/install-global-rules.sh                # creates the source from the template if missing and connects it
+"${EDITOR:-nano}" ~/.agents/AGENTS.md        # adjust it to your taste; the changes reach every tool
+```
+
+| Tool | Global file | How the script connects it |
 |---|---|---|
-| Claude Code | `~/.claude/CLAUDE.md` | Añade una línea `@` con la ruta absoluta de la fuente |
-| Codex | `~/.codex/AGENTS.md` | Enlace simbólico |
-| Copilot CLI | `~/.copilot/copilot-instructions.md` | Enlace simbólico |
-| Windsurf | `~/.codeium/windsurf/memories/global_rules.md` | Enlace simbólico (Windsurf admite hasta 6 000 caracteres) |
-| Cursor | Settings → Rules → User Rules | Manual: pega el contenido |
+| Claude Code | `~/.claude/CLAUDE.md` | Adds an `@` line with the source's absolute path |
+| Codex | `~/.codex/AGENTS.md` | Symbolic link |
+| Copilot CLI | `~/.copilot/copilot-instructions.md` | Symbolic link |
+| Windsurf | `~/.codeium/windsurf/memories/global_rules.md` | Symbolic link (Windsurf accepts up to 6,000 characters) |
+| Cursor | Settings → Rules → User Rules | Manual: paste the content |
 
-No reemplaza un archivo de instrucciones que ya tengas: te avisa para que unas su contenido con la fuente y vuelvas a ejecutarlo con `--force`, que deja una copia `.bak`. `--dry-run` muestra lo que haría.
+It does not replace an instructions file you already have: it warns you so you can merge its content into the source and run it again with `--force`, which leaves a `.bak` copy. `--dry-run` shows what it would do.
 
-## Cómo funcionan juntos
+## How they work together
 
 ```
           general  ◄──── grilling, research
            ▲     ▲
-  arquitectura ──┼──► domain-modeling (ADRs, glosario)
+  architecture ──┼──► domain-modeling (ADRs, glossary)
                  │
-           ingenieria ──── tdd, diagnosing-bugs, codebase-design, code-review
-            ▲    │         detectan el lenguaje y cargan <lenguaje>-<rol>
+          engineering ──── tdd, diagnosing-bugs, codebase-design, code-review
+            ▲    │         detect the language and load <language>-<role>
   qa ───────┘    ▼
-  (oráculo)    go  (php)  (typescript) ...    plugins de lenguaje
+  (oracle)     go  (php)  (typescript) ...    language plugins
 ```
 
-- Cada plugin funciona solo; juntos rinden más. Si una skill que otra recomienda no está instalada, sigue sin ella y lo dice.
-- Los plugins de lenguaje implementan las skills `<lenguaje>-review`, `<lenguaje>-testing`, `<lenguaje>-debugging` y `<lenguaje>-design` ([contrato](docs/CONTRATO-LENGUAJES.md)).
-- Flujo típico con QA separado: `to-spec` → `qa-acceptance-criteria` → `qa-test-design` → `qa-test-automation` → `to-tickets` → `tdd` por ticket → `qa-verify` → `go-simplify` → `code-review` → `qa-test-the-tests` → `create-pr`. Si no sabes por dónde empezar: `por-donde-empiezo`.
+- Each plugin works on its own; together they do more. If a skill another one recommends is not installed, it carries on without it and says so.
+- Language plugins implement the `<language>-review`, `<language>-testing`, `<language>-debugging` and `<language>-design` skills ([contract](docs/LANGUAGE-CONTRACT.md)).
+- Typical workflow with separate QA: `to-spec` → `qa-acceptance-criteria` → `qa-test-design` → `qa-test-automation` → `to-tickets` → `tdd` per ticket → `qa-verify` → `go-simplify` → `code-review` → `qa-test-the-tests` → `create-pr`. If you do not know where to start: `where-to-start`.
 
-## Portabilidad: decisiones de diseño
+## Portability: design decisions
 
-- **Nombres únicos.** Codex, Copilot, Cursor y Windsurf instalan las skills en carpetas planas, sin el espacio de nombres del plugin. Por eso las skills genéricas llevan prefijo (`qa-verify`, `go-testing`, `ingenieria-setup`), y las referencias entre skills usan el nombre a secas.
-- **Frontmatter estándar.** Solo `name`, `description` y `license`, validados con el validador de referencia de Agent Skills. Las skills que en Claude Code eran solo para el usuario lo dicen ahora en su descripción, porque `disable-model-invocation` no es parte del estándar.
-- **Autocontenidas.** Lo compartido vive en una skill hermana (`qa-core`), no en carpetas del plugin que una instalación de skills sueltas no copiaría.
-- **Instrucciones neutras.** Donde una skill usa sub-agentes, preguntas al usuario o carga de otras skills, dice qué hacer si la herramienta no lo ofrece ([portabilidad](plugins/qa/skills/qa-core/referencias/portabilidad.md)).
-- **Una sola fuente de manifiestos.** `catalogo.json` → `python3 tools/build_manifests.py` genera los 24 manifiestos de Claude Code, Codex, Copilot y Cursor; la CI falla si se desincronizan.
+- **Unique names.** Codex, Copilot, Cursor and Windsurf install skills into flat folders, without the plugin's namespace. That is why generic skills carry a prefix (`qa-verify`, `go-testing`, `engineering-setup`), and references between skills use the bare name.
+- **Standard frontmatter.** Only `name`, `description` and `license`, validated with the Agent Skills reference validator. Skills meant only for the user say so in their description, because `disable-model-invocation` is not part of the standard; Codex gets `agents/openai.yaml`.
+- **Self-contained.** What is shared lives in a sibling skill (`qa-core`), not in plugin folders a loose-skills installation would not copy.
+- **Neutral instructions.** Where a skill uses subagents, questions to the user or loading other skills, it says what to do if the tool does not offer that ([portability](plugins/qa/skills/qa-core/references/portability.md)).
+- **A single source of manifests.** `catalog.json` → `python3 tools/build_manifests.py` generates the 24 manifests for Claude Code, Codex, Copilot and Cursor; CI fails if they drift.
 
-## Contribuir
+## Contributing
 
-Las reglas completas están en [AGENTS.md](AGENTS.md). Lo esencial:
+The full rules are in [AGENTS.md](AGENTS.md). The essentials:
 
-1. Las skills cumplen el [estándar Agent Skills](https://agentskills.io/specification): `pip install skills-ref && agentskills validate plugins/<plugin>/skills/<skill>`.
-2. **Todo cambio en un plugin sube su versión en `catalogo.json`**; después `python3 tools/build_manifests.py`. Sin subir la versión, quien ya lo instaló nunca recibe el cambio.
-3. Para probar sin instalar: `claude --plugin-dir ./plugins/<plugin>`.
-4. La CI (`.github/workflows/validar.yml`) comprueba manifiestos, versiones, skills, tests de scripts, `claude plugin validate` y el instalador.
+1. Skills follow the [Agent Skills standard](https://agentskills.io/specification): `pip install skills-ref && agentskills validate plugins/<plugin>/skills/<skill>`.
+2. **Every change to a plugin bumps its version in `catalog.json`**; then `python3 tools/build_manifests.py`. Without the version bump, whoever already installed it never receives the change.
+3. To try it without installing: `claude --plugin-dir ./plugins/<plugin>`.
+4. CI (`.github/workflows/validate.yml`) checks manifests, versions, skills, script tests, `claude plugin validate` and the installer.
 
-## Origen y licencias
+## Origin and licenses
 
-- `general` y la mayor parte de `ingenieria` están adaptadas de [mattpocock/skills](https://github.com/mattpocock/skills) (MIT): traducidas, con tickets como Markdown local y analogías pedagógicas.
-- El catálogo `building-blocks` viene de [proyecto26/system-design-skills](https://github.com/proyecto26/system-design-skills) (MIT), curado y corregido.
-- `qa`, `go`, el resto de `arquitectura`, `git-commit` y `create-pr` son propios.
+- `general` and most of `engineering` are adapted from [mattpocock/skills](https://github.com/mattpocock/skills) (MIT), with tickets as local Markdown and pedagogical analogies.
+- The `building-blocks` catalog comes from [proyecto26/system-design-skills](https://github.com/proyecto26/system-design-skills) (MIT), curated and corrected.
+- `qa`, `go`, the rest of `architecture`, `git-commit` and `create-pr` are original.
 
-Licencia MIT ([LICENSE](LICENSE)).
-
----
-
-## English
-
-Engineering plugins for coding agents, **written in Spanish**, that work in **Claude Code, OpenAI Codex, GitHub Copilot, Cursor and Windsurf**. They are built on the open [Agent Skills](https://agentskills.io) standard (each skill is a folder with a `SKILL.md`) and the [Agent Plugins](https://agent-plugins.org) packaging standard, plus each tool's native manifests.
-
-| Plugin | What it does |
-|---|---|
-| `general` | Where to start (a router over all plugins plus an AGENTS.md template), plan grilling, teaching with analogies, writing for agents, session handoffs, research with primary sources |
-| `ingenieria` | Language-agnostic engineering flow: specs, tickets, TDD, debugging, module design, code review, commits, PRs |
-| `qa` | QA separated from development: the implementing agent never writes the oracle and no agent certifies; integrity seal, traceability and mutation scripts with tests |
-| `arquitectura` | Large-scale system design starting from what exists, with computed capacity estimates and a parallel red team |
-| `go` | Idiomatic Go, design rules, DDD in Go, behavior-preserving simplification (`go-simplify`), and the language-role skills used by `ingenieria` |
-
-### Install
-
-All plugins at once (plugin names: `general`, `ingenieria`, `qa`, `arquitectura`, `go`):
-
-```bash
-# Claude Code
-claude plugin marketplace add svallejo-dev/sv-agent-plugins; for p in general ingenieria qa arquitectura go; do claude plugin install "$p@sv-agent-plugins"; done
-# OpenAI Codex
-codex plugin marketplace add svallejo-dev/sv-agent-plugins; for p in general ingenieria qa arquitectura go; do codex plugin add "$p@sv-agent-plugins"; done
-# GitHub Copilot CLI
-copilot plugin marketplace add svallejo-dev/sv-agent-plugins; for p in general ingenieria qa arquitectura go; do copilot plugin install "$p@sv-agent-plugins"; done
-# Cursor (from a clone of this repo; then reload the window)
-mkdir -p ~/.cursor/plugins/local; for p in general ingenieria qa arquitectura go; do ln -sfn "$PWD/plugins/$p" ~/.cursor/plugins/local/$p; done
-# Windsurf (from a clone; no plugin system, skills only)
-./install.sh --tool windsurf --scope user
-```
-
-A single plugin:
-
-| Tool | Command |
-|---|---|
-| Claude Code | `claude plugin marketplace add svallejo-dev/sv-agent-plugins` then `claude plugin install qa@sv-agent-plugins` |
-| OpenAI Codex | `codex plugin marketplace add svallejo-dev/sv-agent-plugins` then `codex plugin add qa@sv-agent-plugins` |
-| GitHub Copilot CLI | `copilot plugin marketplace add svallejo-dev/sv-agent-plugins` then `copilot plugin install qa@sv-agent-plugins` |
-| Cursor | `ln -sfn "$PWD/plugins/qa" ~/.cursor/plugins/local/qa`, or `./install.sh --tool cursor --scope user --plugins qa` |
-| Windsurf | `./install.sh --tool windsurf --scope user --plugins qa` (skills go to `~/.codeium/windsurf/skills/`) |
-
-Claude Code, Codex and Copilot CLI installs were verified end to end (5 plugins, 39 skills). Cursor and Windsurf follow their documented formats; the installer is tested, but not inside those editors.
-
-To update, run `claude plugin marketplace update sv-agent-plugins` and `claude plugin update <plugin>@sv-agent-plugins` (or the equivalent in each tool); every published change bumps the plugin version.
-
-Always install whole plugins: some skills depend on a sibling skill (all `qa-*` skills use `qa-core`). MIT licensed; see [Origin](#origen-y-licencias) for third-party attributions.
+MIT license ([LICENSE](LICENSE)).

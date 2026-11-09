@@ -1,4 +1,4 @@
-"""Tests de los scripts del plugin qa. Ejecutar: python3 -m unittest discover -s scripts/tests"""
+"""Tests for the qa plugin scripts. Run: python3 -m unittest discover -s scripts/tests"""
 
 from __future__ import annotations
 
@@ -16,15 +16,15 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-import mutantes  # noqa: E402
-import sello  # noqa: E402
-import trazabilidad  # noqa: E402
+import mutants  # noqa: E402
+import seal  # noqa: E402
+import traceability  # noqa: E402
 
 
-def _silencio(fn, *args):
+def _quiet(fn, *args):
     with contextlib.redirect_stdout(io.StringIO()) as out, contextlib.redirect_stderr(io.StringIO()) as err:
-        codigo = fn(*args)
-    return codigo, out.getvalue(), err.getvalue()
+        code = fn(*args)
+    return code, out.getvalue(), err.getvalue()
 
 
 def _git_init(d: Path) -> None:
@@ -38,222 +38,222 @@ def _commit(d: Path, msg: str = "c") -> None:
     subprocess.run(["git", "-C", str(d), "commit", "-qm", msg], check=True)
 
 
-# ---------------------------------------------------------------- sello
+# ---------------------------------------------------------------- seal
 
-class TestSello(unittest.TestCase):
+class TestSeal(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
-        self.raiz = Path(self.tmp.name)
-        (self.raiz / "acceptance/feat").mkdir(parents=True)
-        (self.raiz / "acceptance/feat/ESC-01-alta.hurl").write_text("GET {{base_url}}/x\nHTTP 200\n")
-        (self.raiz / "acceptance/feat/limites.feature").write_text("Escenario: ESC-02 límite\n")
-        (self.raiz / "docs/agentes").mkdir(parents=True)
-        (self.raiz / "docs/agentes/qa.md").write_text("comando: make p1\n")
-        self.sello = self.raiz / "acceptance/feat/.qa-sello.json"
+        self.root = Path(self.tmp.name)
+        (self.root / "acceptance/feat").mkdir(parents=True)
+        (self.root / "acceptance/feat/SC-01-register.hurl").write_text("GET {{base_url}}/x\nHTTP 200\n")
+        (self.root / "acceptance/feat/limits.feature").write_text("Scenario: SC-02 limit\n")
+        (self.root / "docs/agents").mkdir(parents=True)
+        (self.root / "docs/agents/qa.md").write_text("command: make r1\n")
+        self.seal = self.root / "acceptance/feat/.qa-seal.json"
 
     def tearDown(self):
         self.tmp.cleanup()
 
-    def _sellar(self):
-        return sello.sellar(self.sello, self.raiz, ["acceptance/feat", "docs/agentes/qa.md"], "diseño aprobado", "qa")
+    def _seal(self):
+        return seal.seal(self.seal, self.root, ["acceptance/feat", "docs/agents/qa.md"], "design approved", "qa")
 
-    def test_sellar_y_verificar_integro(self):
-        datos = self._sellar()
-        self.assertTrue(sello.verificar(self.sello, self.raiz)["integro"])
-        self.assertEqual(len(datos["archivos"]), 3)
-        self.assertNotIn("acceptance/feat/.qa-sello.json", datos["archivos"], "el sello no se sella a sí mismo")
+    def test_seal_and_verify_intact(self):
+        data = self._seal()
+        self.assertTrue(seal.verify(self.seal, self.root)["intact"])
+        self.assertEqual(len(data["files"]), 3)
+        self.assertNotIn("acceptance/feat/.qa-seal.json", data["files"], "the seal does not seal itself")
 
-    def test_detecta_modificacion_eliminacion_y_nuevo(self):
-        self._sellar()
-        (self.raiz / "acceptance/feat/ESC-01-alta.hurl").write_text("GET {{base_url}}/x\nHTTP 404\n")
-        (self.raiz / "acceptance/feat/limites.feature").unlink()
-        (self.raiz / "acceptance/feat/ESC-09-nuevo.hurl").write_text("x")
-        inf = sello.verificar(self.sello, self.raiz)
-        self.assertFalse(inf["integro"])
-        self.assertEqual(inf["modificados"], ["acceptance/feat/ESC-01-alta.hurl"])
-        self.assertEqual(inf["eliminados"], ["acceptance/feat/limites.feature"])
-        self.assertEqual(inf["nuevos"], ["acceptance/feat/ESC-09-nuevo.hurl"])
+    def test_detects_modification_deletion_and_new_file(self):
+        self._seal()
+        (self.root / "acceptance/feat/SC-01-register.hurl").write_text("GET {{base_url}}/x\nHTTP 404\n")
+        (self.root / "acceptance/feat/limits.feature").unlink()
+        (self.root / "acceptance/feat/SC-09-new.hurl").write_text("x")
+        rep = seal.verify(self.seal, self.root)
+        self.assertFalse(rep["intact"])
+        self.assertEqual(rep["modified"], ["acceptance/feat/SC-01-register.hurl"])
+        self.assertEqual(rep["deleted"], ["acceptance/feat/limits.feature"])
+        self.assertEqual(rep["new"], ["acceptance/feat/SC-09-new.hurl"])
 
-    def test_cambiar_el_comando_de_la_configuracion_rompe_el_sello(self):
-        self._sellar()
-        (self.raiz / "docs/agentes/qa.md").write_text("comando: make p1 TAGS=~@lento\n")
-        self.assertEqual(sello.verificar(self.sello, self.raiz)["modificados"], ["docs/agentes/qa.md"])
+    def test_changing_the_configured_command_breaks_the_seal(self):
+        self._seal()
+        (self.root / "docs/agents/qa.md").write_text("command: make r1 TAGS=~@slow\n")
+        self.assertEqual(seal.verify(self.seal, self.root)["modified"], ["docs/agents/qa.md"])
 
-    def test_node_modules_y_pycache_no_se_ignoran(self):
-        self._sellar()
-        (self.raiz / "acceptance/feat/node_modules/@playwright/test").mkdir(parents=True)
-        (self.raiz / "acceptance/feat/node_modules/@playwright/test/index.js").write_text("trampa")
-        self.assertFalse(sello.verificar(self.sello, self.raiz)["integro"])
+    def test_node_modules_and_pycache_are_not_ignored(self):
+        self._seal()
+        (self.root / "acceptance/feat/node_modules/@playwright/test").mkdir(parents=True)
+        (self.root / "acceptance/feat/node_modules/@playwright/test/index.js").write_text("cheat")
+        self.assertFalse(seal.verify(self.seal, self.root)["intact"])
 
-    def test_enlace_simbolico_rompe_el_sello(self):
-        self._sellar()
-        fuera = self.raiz / "fuera"
-        fuera.mkdir()
-        (fuera / "pasos.go").write_text("x")
-        os.symlink(fuera, self.raiz / "acceptance/feat/steps")
-        inf = sello.verificar(self.sello, self.raiz)
-        self.assertFalse(inf["integro"])
-        self.assertEqual(inf["enlaces"], ["acceptance/feat/steps"])
-        with self.assertRaises(sello.ErrorDeUso):
-            sello.resellar(self.sello, self.raiz, [], "H-01: x", "qa")
+    def test_symbolic_link_breaks_the_seal(self):
+        self._seal()
+        outside = self.root / "outside"
+        outside.mkdir()
+        (outside / "steps.go").write_text("x")
+        os.symlink(outside, self.root / "acceptance/feat/steps")
+        rep = seal.verify(self.seal, self.root)
+        self.assertFalse(rep["intact"])
+        self.assertEqual(rep["links"], ["acceptance/feat/steps"])
+        with self.assertRaises(seal.UsageError):
+            seal.reseal(self.seal, self.root, [], "F-01: x", "qa")
 
-    def test_requiere_rutas_selladas(self):
-        sello.sellar(self.sello, self.raiz, ["acceptance/feat"], "diseño", "qa")
-        inf = sello.verificar(self.sello, self.raiz, requeridas=["docs/agentes/qa.md", "acceptance/feat/limites.feature"])
-        self.assertEqual(inf["requeridas_sin_sellar"], ["docs/agentes/qa.md"])
-        self.assertFalse(inf["integro"])
+    def test_required_paths_must_be_sealed(self):
+        seal.seal(self.seal, self.root, ["acceptance/feat"], "design", "qa")
+        rep = seal.verify(self.seal, self.root, required=["docs/agents/qa.md", "acceptance/feat/limits.feature"])
+        self.assertEqual(rep["required_not_sealed"], ["docs/agents/qa.md"])
+        self.assertFalse(rep["intact"])
 
-    def test_no_permite_sellar_dos_veces_ni_sin_motivo(self):
-        with self.assertRaises(sello.ErrorDeUso):
-            sello.sellar(self.sello, self.raiz, ["acceptance/feat"], "  ", "qa")
-        self._sellar()
-        with self.assertRaises(sello.ErrorDeUso):
-            sello.sellar(self.sello, self.raiz, ["acceptance/feat"], "otra vez", "qa")
+    def test_no_double_seal_and_no_seal_without_reason(self):
+        with self.assertRaises(seal.UsageError):
+            seal.seal(self.seal, self.root, ["acceptance/feat"], "  ", "qa")
+        self._seal()
+        with self.assertRaises(seal.UsageError):
+            seal.seal(self.seal, self.root, ["acceptance/feat"], "again", "qa")
 
-    def test_resellar_exige_motivo_y_deja_historial(self):
-        self._sellar()
-        (self.raiz / "acceptance/feat/ESC-01-alta.hurl").write_text("cambio")
-        with self.assertRaises(sello.ErrorDeUso):
-            sello.resellar(self.sello, self.raiz, [], "", "qa")
-        datos, cambios = sello.resellar(self.sello, self.raiz, [], "E-02: test corregido", "qa")
-        self.assertEqual(cambios["modificados"], ["acceptance/feat/ESC-01-alta.hurl"])
-        self.assertEqual([e["accion"] for e in datos["historial"]], ["sellar", "resellar"])
-        self.assertTrue(sello.verificar(self.sello, self.raiz)["integro"])
+    def test_reseal_requires_reason_and_keeps_history(self):
+        self._seal()
+        (self.root / "acceptance/feat/SC-01-register.hurl").write_text("change")
+        with self.assertRaises(seal.UsageError):
+            seal.reseal(self.seal, self.root, [], "", "qa")
+        data, changes = seal.reseal(self.seal, self.root, [], "E-02: test fixed", "qa")
+        self.assertEqual(changes["modified"], ["acceptance/feat/SC-01-register.hurl"])
+        self.assertEqual([e["action"] for e in data["history"]], ["seal", "reseal"])
+        self.assertTrue(seal.verify(self.seal, self.root)["intact"])
 
-    def test_ruta_fuera_de_la_raiz_es_error(self):
-        with self.assertRaises(sello.ErrorDeUso):
-            sello.sellar(self.sello, self.raiz, ["../"], "x", "qa")
+    def test_path_outside_the_root_is_an_error(self):
+        with self.assertRaises(seal.UsageError):
+            seal.seal(self.seal, self.root, ["../"], "x", "qa")
 
-    def test_cli_codigos_de_salida(self):
-        base = ["--sello", str(self.sello), "--raiz", str(self.raiz)]
-        self.assertEqual(_silencio(sello.main, ["verificar", *base])[0], 2, "sin sello es error de uso")
-        self.assertEqual(_silencio(sello.main, ["sellar", *base, "--motivo", "inicial", "acceptance/feat"])[0], 0)
-        self.assertEqual(_silencio(sello.main, ["verificar", *base])[0], 0)
-        (self.raiz / "acceptance/feat/limites.feature").write_text("editado por el dev")
-        codigo, salida, _ = _silencio(sello.main, ["verificar", *base])
-        self.assertEqual(codigo, 1)
-        self.assertIn("SELLO ROTO", salida)
+    def test_cli_exit_codes(self):
+        base = ["--seal", str(self.seal), "--root", str(self.root)]
+        self.assertEqual(_quiet(seal.main, ["verify", *base])[0], 2, "no seal is a usage error")
+        self.assertEqual(_quiet(seal.main, ["seal", *base, "--reason", "initial", "acceptance/feat"])[0], 0)
+        self.assertEqual(_quiet(seal.main, ["verify", *base])[0], 0)
+        (self.root / "acceptance/feat/limits.feature").write_text("edited by the dev")
+        code, out, _ = _quiet(seal.main, ["verify", *base])
+        self.assertEqual(code, 1)
+        self.assertIn("SEAL BROKEN", out)
 
 
-class TestSelloContraBase(unittest.TestCase):
-    """El agente que edita y vuelve a sellar no pasa desapercibido."""
+class TestSealAgainstBase(unittest.TestCase):
+    """The agent that edits and reseals does not go unnoticed."""
 
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
-        self.raiz = Path(self.tmp.name)
-        _git_init(self.raiz)
-        (self.raiz / "acceptance/feat").mkdir(parents=True)
-        (self.raiz / "acceptance/feat/ESC-01.hurl").write_text("HTTP 409\n")
-        self.sello = self.raiz / "acceptance/feat/.qa-sello.json"
-        sello.sellar(self.sello, self.raiz, ["acceptance/feat"], "diseño aprobado", "qa")
-        _commit(self.raiz, "base")
-        subprocess.run(["git", "-C", str(self.raiz), "checkout", "-qb", "feature"], check=True)
+        self.root = Path(self.tmp.name)
+        _git_init(self.root)
+        (self.root / "acceptance/feat").mkdir(parents=True)
+        (self.root / "acceptance/feat/SC-01.hurl").write_text("HTTP 409\n")
+        self.seal = self.root / "acceptance/feat/.qa-seal.json"
+        seal.seal(self.seal, self.root, ["acceptance/feat"], "design approved", "qa")
+        _commit(self.root, "base")
+        subprocess.run(["git", "-C", str(self.root), "checkout", "-qb", "feature"], check=True)
 
     def tearDown(self):
         self.tmp.cleanup()
 
-    def test_resellado_sin_referencia_rompe_contra_la_base(self):
-        (self.raiz / "acceptance/feat/ESC-01.hurl").write_text("HTTP 422\n")
-        sello.resellar(self.sello, self.raiz, [], "ajuste", "dev")
-        self.assertTrue(sello.verificar(self.sello, self.raiz)["integro"], "sin base, el re-sellado pasa…")
-        inf = sello.verificar(self.sello, self.raiz, base="main")
-        self.assertFalse(inf["integro"], "…pero contra la base queda a la vista")
-        self.assertEqual(len(inf["resellados_desde_base"]), 1)
+    def test_reseal_without_reference_breaks_against_base(self):
+        (self.root / "acceptance/feat/SC-01.hurl").write_text("HTTP 422\n")
+        seal.reseal(self.seal, self.root, [], "tweak", "dev")
+        self.assertTrue(seal.verify(self.seal, self.root)["intact"], "without a base, the reseal passes…")
+        rep = seal.verify(self.seal, self.root, base="main")
+        self.assertFalse(rep["intact"], "…but against the base it shows")
+        self.assertEqual(len(rep["reseals_since_base"]), 1)
 
-    def test_resellado_con_referencia_se_lista_para_revision(self):
-        (self.raiz / "acceptance/feat/ESC-01.hurl").write_text("HTTP 422\n")
-        sello.resellar(self.sello, self.raiz, [], "E-03: el criterio cambió", "qa")
-        inf = sello.verificar(self.sello, self.raiz, base="main")
-        self.assertTrue(inf["integro"])
-        self.assertEqual(inf["resellados_desde_base"][0]["motivo"], "E-03: el criterio cambió")
+    def test_reseal_with_reference_is_listed_for_review(self):
+        (self.root / "acceptance/feat/SC-01.hurl").write_text("HTTP 422\n")
+        seal.reseal(self.seal, self.root, [], "E-03: the criterion changed", "qa")
+        rep = seal.verify(self.seal, self.root, base="main")
+        self.assertTrue(rep["intact"])
+        self.assertEqual(rep["reseals_since_base"][0]["reason"], "E-03: the criterion changed")
 
-    def test_borrar_y_recrear_el_sello_se_detecta(self):
-        self.sello.unlink()
-        (self.raiz / "acceptance/feat/ESC-01.hurl").write_text("HTTP 422\n")
-        sello.sellar(self.sello, self.raiz, ["acceptance/feat"], "nuevo", "dev")
-        inf = sello.verificar(self.sello, self.raiz, base="main")
-        self.assertFalse(inf["integro"])
-        self.assertIn("historial del sello fue reescrito", " ".join(inf["problemas_base"]))
+    def test_deleting_and_recreating_the_seal_is_detected(self):
+        self.seal.unlink()
+        (self.root / "acceptance/feat/SC-01.hurl").write_text("HTTP 422\n")
+        seal.seal(self.seal, self.root, ["acceptance/feat"], "new", "dev")
+        rep = seal.verify(self.seal, self.root, base="main")
+        self.assertFalse(rep["intact"])
+        self.assertIn("seal history was rewritten", " ".join(rep["base_problems"]))
 
-    def test_borrar_el_sello_se_detecta(self):
-        self.sello.unlink()
-        inf = sello.verificar(self.sello, self.raiz, base="main")
-        self.assertFalse(inf["integro"])
+    def test_deleting_the_seal_is_detected(self):
+        self.seal.unlink()
+        rep = seal.verify(self.seal, self.root, base="main")
+        self.assertFalse(rep["intact"])
 
-    def test_feature_nueva_sin_sello_en_base(self):
-        otro = self.raiz / "acceptance/nueva/.qa-sello.json"
-        (self.raiz / "acceptance/nueva").mkdir()
-        (self.raiz / "acceptance/nueva/ESC-01.hurl").write_text("x")
-        sello.sellar(otro, self.raiz, ["acceptance/nueva"], "diseño", "qa")
-        inf = sello.verificar(otro, self.raiz, base="main")
-        self.assertTrue(inf["integro"])
-        self.assertEqual(len(inf["resellados_desde_base"]), 1, "se lista todo para revisión humana")
+    def test_new_feature_without_seal_on_base(self):
+        other = self.root / "acceptance/new/.qa-seal.json"
+        (self.root / "acceptance/new").mkdir()
+        (self.root / "acceptance/new/SC-01.hurl").write_text("x")
+        seal.seal(other, self.root, ["acceptance/new"], "design", "qa")
+        rep = seal.verify(other, self.root, base="main")
+        self.assertTrue(rep["intact"])
+        self.assertEqual(len(rep["reseals_since_base"]), 1, "everything is listed for human review")
 
-    def test_base_inexistente_es_error(self):
-        with self.assertRaises(sello.ErrorDeUso):
-            sello.verificar(self.sello, self.raiz, base="no-existe")
+    def test_missing_base_is_an_error(self):
+        with self.assertRaises(seal.UsageError):
+            seal.verify(self.seal, self.root, base="does-not-exist")
 
 
-# ---------------------------------------------------------------- trazabilidad
+# ---------------------------------------------------------------- traceability
 
-CRITERIOS = textwrap.dedent("""\
-    # Criterios
-    Estado: aprobado
+CRITERIA = textwrap.dedent("""\
+    # Criteria
+    Status: approved
 
-    ## AC-01: registrar dispositivo
-    - Oráculo: listado
+    ## AC-01: register device
+    - Oracle: listing
 
-    ## AC-02: límite de dispositivos
-    - Oráculo: 409
+    ## AC-02: device limit
+    - Oracle: 409
 
-    ### AC-03: token sirve al SDK
-    - Oráculo: SDK inicializado
+    ### AC-03: token works for the SDK
+    - Oracle: SDK initialized
 
-    ## AC-04: idea vieja
-    - Estado: descartado
+    ## AC-04: old idea
+    - Status: discarded
 
     ```markdown
-    ## AC-99: ejemplo dentro de un bloque de código, no cuenta
+    ## AC-99: example inside a code block, does not count
     ```
     """)
 
-ESCENARIOS = textwrap.dedent("""\
-    # Escenarios
+SCENARIOS = textwrap.dedent("""\
+    # Scenarios
 
-    | ID | Criterio | Técnica | Peldaño | Escenario | Oráculo | Estado |
+    | ID | Criterion | Technique | Rung | Scenario | Oracle | Status |
     |---|---|---|---|---|---|---|
-    | ESC-01 | AC-01 | particiones | 1 | alta | listado | activo |
-    | ESC-02 | AC-02 | límites | 1, 4 | quinto | 409 \\| listado | activo |
-    | ESC-03 | AC-02, AC-01 | límites | 1 | cuarto | 201 | activo |
-    | ESC-04 | AC-03 | walking skeleton | 3 | sdk | sdk ok | activo |
-    | ESC-05 | AC-02 | fallo | 1 | timeout | 503 | bloqueado-testabilidad |
-    | ESC-06 | AC-01 | x | 1 | viejo | x | descartado |
-    | ESC-07 | AC-04 | x | 1 | podado por riesgo | x | descartado |
+    | SC-01 | AC-01 | partitions | 1 | register | listing | active |
+    | SC-02 | AC-02 | boundaries | 1, 4 | fifth | 409 \\| listing | active |
+    | SC-03 | AC-02, AC-01 | boundaries | 1 | fourth | 201 | active |
+    | SC-04 | AC-03 | walking skeleton | 3 | sdk | sdk ok | active |
+    | SC-05 | AC-02 | failure | 1 | timeout | 503 | blocked-testability |
+    | SC-06 | AC-01 | x | 1 | old | x | discarded |
+    | SC-07 | AC-04 | x | 1 | pruned by risk | x | discarded |
 
-    ### ESC-02
-    Detalle con un ESC-99 mencionado en prosa, que no debe parsearse como fila.
+    ### SC-02
+    Detail with an SC-99 mentioned in prose, which must not be parsed as a row.
     """)
 
 
-def _junit(casos: list[tuple[str, str]]) -> str:
-    partes = ['<?xml version="1.0"?><testsuites><testsuite name="s">']
-    for nombre, res in casos:
-        hijo = {"failed": "<failure message='x'/>", "skipped": "<skipped/>", "error": "<error/>"}.get(res, "")
-        partes.append(f'<testcase classname="acceptance" name="{nombre}">{hijo}</testcase>')
-    partes.append("</testsuite></testsuites>")
-    return "".join(partes)
+def _junit(cases: list[tuple[str, str]]) -> str:
+    parts = ['<?xml version="1.0"?><testsuites><testsuite name="s">']
+    for name, res in cases:
+        child = {"failed": "<failure message='x'/>", "skipped": "<skipped/>", "error": "<error/>"}.get(res, "")
+        parts.append(f'<testcase classname="acceptance" name="{name}">{child}</testcase>')
+    parts.append("</testsuite></testsuites>")
+    return "".join(parts)
 
 
-VERDES_P1 = [("ESC-01 alta", "passed"), ("ESC-02 quinto #1", "passed"),
-             ("ESC-02 quinto #2", "passed"), ("ESC-03 cuarto", "passed")]
+GREEN_R1 = [("SC-01 register", "passed"), ("SC-02 fifth #1", "passed"),
+            ("SC-02 fifth #2", "passed"), ("SC-03 fourth", "passed")]
 
 
-class TestTrazabilidad(unittest.TestCase):
+class TestTraceability(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.d = Path(self.tmp.name)
-        (self.d / "criterios.md").write_text(CRITERIOS)
-        (self.d / "escenarios.md").write_text(ESCENARIOS)
+        (self.d / "criteria.md").write_text(CRITERIA)
+        (self.d / "scenarios.md").write_text(SCENARIOS)
         self.src = self.d / "acceptance"
         self.src.mkdir()
 
@@ -261,292 +261,293 @@ class TestTrazabilidad(unittest.TestCase):
         self.tmp.cleanup()
 
     def _run(self, *extra):
-        return _silencio(trazabilidad.main, ["--criterios", str(self.d / "criterios.md"),
-                                             "--escenarios", str(self.d / "escenarios.md"), "--json", *extra])
+        return _quiet(traceability.main, ["--criteria", str(self.d / "criteria.md"),
+                                          "--scenarios", str(self.d / "scenarios.md"), "--json", *extra])
 
-    def _rep(self, casos, nombre="r.xml"):
-        rep = self.d / nombre
-        rep.write_text(_junit(casos))
+    def _rep(self, cases, name="r.xml"):
+        rep = self.d / name
+        rep.write_text(_junit(cases))
         return rep
 
-    def test_parseo_basico(self):
-        self.assertEqual(trazabilidad.leer_criterios(CRITERIOS), (["AC-01", "AC-02", "AC-03"], ["AC-04"]))
-        esc = trazabilidad.leer_escenarios(ESCENARIOS)
-        self.assertEqual([e.id for e in esc], [f"ESC-0{i}" for i in range(1, 8)])
-        self.assertEqual(esc[1].peldanos, [1, 4])
-        self.assertEqual(esc[2].criterios, ["AC-02", "AC-01"])
+    def test_basic_parsing(self):
+        self.assertEqual(traceability.read_criteria(CRITERIA), (["AC-01", "AC-02", "AC-03"], ["AC-04"]))
+        sc = traceability.read_scenarios(SCENARIOS)
+        self.assertEqual([s.id for s in sc], [f"SC-0{i}" for i in range(1, 8)])
+        self.assertEqual(sc[1].rungs, [1, 4])
+        self.assertEqual(sc[2].criteria, ["AC-02", "AC-01"])
 
-    def test_solo_declaracion_completa(self):
-        codigo, salida, _ = self._run()
-        self.assertEqual(codigo, 0, salida)
-        self.assertTrue(any("ESC-05" in a for a in json.loads(salida)["avisos"]))
+    def test_declaration_only_is_complete(self):
+        code, out, _ = self._run()
+        self.assertEqual(code, 0, out)
+        self.assertTrue(any("SC-05" in w for w in json.loads(out)["warnings"]))
 
-    def test_criterio_sin_escenario_y_referencia_inexistente(self):
-        (self.d / "criterios.md").write_text(CRITERIOS + "\n## AC-05: nuevo\n")
-        (self.d / "escenarios.md").write_text(ESCENARIOS.replace("| ESC-01 | AC-01 |", "| ESC-01 | AC-01, AC-09 |"))
-        codigo, salida, _ = self._run()
-        huecos = json.loads(salida)["huecos"]
-        self.assertEqual(codigo, 1)
-        self.assertIn("AC-05 no tiene ningún escenario", huecos)
-        self.assertTrue(any("AC-09" in h for h in huecos))
+    def test_criterion_without_scenario_and_missing_reference(self):
+        (self.d / "criteria.md").write_text(CRITERIA + "\n## AC-05: new\n")
+        (self.d / "scenarios.md").write_text(SCENARIOS.replace("| SC-01 | AC-01 |", "| SC-01 | AC-01, AC-09 |"))
+        code, out, _ = self._run()
+        gaps = json.loads(out)["gaps"]
+        self.assertEqual(code, 1)
+        self.assertIn("AC-05 has no scenario", gaps)
+        self.assertTrue(any("AC-09" in g for g in gaps))
 
-    def test_escenario_activo_sobre_criterio_descartado(self):
-        (self.d / "escenarios.md").write_text(ESCENARIOS.replace("| x | 1 | podado por riesgo | x | descartado |",
-                                                                 "| x | 1 | podado por riesgo | x | activo |"))
-        codigo, salida, _ = self._run()
-        self.assertEqual(codigo, 1)
-        self.assertTrue(any("AC-04, que está descartado" in h for h in json.loads(salida)["huecos"]))
+    def test_active_scenario_on_discarded_criterion(self):
+        (self.d / "scenarios.md").write_text(SCENARIOS.replace("| x | 1 | pruned by risk | x | discarded |",
+                                                               "| x | 1 | pruned by risk | x | active |"))
+        code, out, _ = self._run()
+        self.assertEqual(code, 1)
+        self.assertTrue(any("AC-04, which is discarded" in g for g in json.loads(out)["gaps"]))
 
-    def test_criterio_solo_bloqueado_no_tiene_cobertura(self):
-        esc = ESCENARIOS.replace("| 3 | sdk | sdk ok | activo |", "| 3 | sdk | sdk ok | bloqueado-testabilidad |")
-        (self.d / "escenarios.md").write_text(esc)
-        codigo, salida, _ = self._run()
-        self.assertEqual(codigo, 1)
-        self.assertTrue(any("AC-03 solo tiene escenarios bloqueados" in h for h in json.loads(salida)["huecos"]))
+    def test_criterion_with_only_blocked_scenarios_has_no_coverage(self):
+        sc = SCENARIOS.replace("| 3 | sdk | sdk ok | active |", "| 3 | sdk | sdk ok | blocked-testability |")
+        (self.d / "scenarios.md").write_text(sc)
+        code, out, _ = self._run()
+        self.assertEqual(code, 1)
+        self.assertTrue(any("AC-03 only has scenarios blocked" in g for g in json.loads(out)["gaps"]))
 
-    def test_fuentes_solo_cuentan_titulos_y_nombres(self):
-        (self.src / "ESC-01-alta.hurl").write_text("x")
-        (self.src / "limites.feature").write_text(
-            "Escenario: ESC-02 quinto\nEscenario: ESC-77 inventado\n# este paso también cubre ESC-03\n")
-        (self.src / "helper.go").write_text("// cubre ESC-03\nfunc x() {}\n")
-        (self.src / "mapping.json").write_text('{"ESC-03": true}')
-        codigo, salida, _ = self._run("--fuentes", str(self.src), "--peldanos", "1")
-        huecos = json.loads(salida)["huecos"]
-        self.assertEqual(codigo, 1)
-        self.assertTrue(any(h.startswith("ESC-03") and "no está implementado" in h for h in huecos),
-                        "un comentario o un JSON no implementan un escenario")
-        self.assertTrue(any(h.startswith("ESC-77") for h in huecos))
-        self.assertFalse(any(h.startswith("ESC-04") for h in huecos), "ESC-04 es peldaño 3, fuera del alcance")
+    def test_sources_only_count_titles_and_names(self):
+        (self.src / "SC-01-register.hurl").write_text("x")
+        (self.src / "limits.feature").write_text(
+            "Scenario: SC-02 fifth\nScenario: SC-77 invented\n# this step also covers SC-03\n")
+        (self.src / "helper.go").write_text("// covers SC-03\nfunc x() {}\n")
+        (self.src / "mapping.json").write_text('{"SC-03": true}')
+        code, out, _ = self._run("--sources", str(self.src), "--rungs", "1")
+        gaps = json.loads(out)["gaps"]
+        self.assertEqual(code, 1)
+        self.assertTrue(any(g.startswith("SC-03") and "is not implemented" in g for g in gaps),
+                        "a comment or a JSON file does not implement a scenario")
+        self.assertTrue(any(g.startswith("SC-77") for g in gaps))
+        self.assertFalse(any(g.startswith("SC-04") for g in gaps), "SC-04 is rung 3, out of scope")
 
-    def test_fuentes_go_y_playwright(self):
-        (self.src / "a_test.go").write_text('t.Run("ESC-01 alta", func(t *testing.T) {})\n')
-        (self.src / "b.spec.ts").write_text("test('ESC-02 quinto', async () => {})\ntest.describe('ESC-03 cuarto', () => {})\n")
-        self.assertEqual(set(trazabilidad.escanear_fuentes([self.src])), {"ESC-01", "ESC-02", "ESC-03"})
+    def test_sources_go_playwright_and_localized_gherkin(self):
+        (self.src / "a_test.go").write_text('t.Run("SC-01 register", func(t *testing.T) {})\n')
+        (self.src / "b.spec.ts").write_text("test('SC-02 fifth', async () => {})\ntest.describe('SC-03 fourth', () => {})\n")
+        (self.src / "c.feature").write_text("# language: es\nEscenario: SC-04 sdk\n")
+        self.assertEqual(set(traceability.scan_sources([self.src])), {"SC-01", "SC-02", "SC-03", "SC-04"})
 
-    def test_junit_verde_completo_en_peldano_1(self):
-        (self.d / "escenarios.md").write_text(ESCENARIOS.replace("| ESC-04 | AC-03 | walking skeleton | 3 |",
-                                                                 "| ESC-04 | AC-03 | walking skeleton | 1, 3 |"))
-        rep = self._rep(VERDES_P1 + [("ESC-04 sdk", "passed")])
-        codigo, salida, _ = self._run("--junit", str(rep), "--peldanos", "1")
-        self.assertEqual(codigo, 0, salida)
+    def test_junit_all_green_on_rung_1(self):
+        (self.d / "scenarios.md").write_text(SCENARIOS.replace("| SC-04 | AC-03 | walking skeleton | 3 |",
+                                                               "| SC-04 | AC-03 | walking skeleton | 1, 3 |"))
+        rep = self._rep(GREEN_R1 + [("SC-04 sdk", "passed")])
+        code, out, _ = self._run("--junit", str(rep), "--rungs", "1")
+        self.assertEqual(code, 0, out)
 
-    def test_criterio_cuyos_escenarios_estan_en_otro_peldano_no_es_verde(self):
-        """El caso PayPal: si el peldaño 3 no corre, el walking skeleton no puede salir en verde."""
-        rep = self._rep(VERDES_P1)
-        codigo, salida, _ = self._run("--junit", str(rep), "--peldanos", "1")
-        self.assertEqual(codigo, 1)
-        self.assertTrue(any(h.startswith("AC-03 sin evidencia en el alcance") for h in json.loads(salida)["huecos"]))
+    def test_criterion_whose_scenarios_are_on_another_rung_is_not_green(self):
+        """The PayPal case: if rung 3 does not run, the walking skeleton cannot come out green."""
+        rep = self._rep(GREEN_R1)
+        code, out, _ = self._run("--junit", str(rep), "--rungs", "1")
+        self.assertEqual(code, 1)
+        self.assertTrue(any(g.startswith("AC-03 has no evidence in scope") for g in json.loads(out)["gaps"]))
 
-    def test_alcance_vacio_es_error(self):
-        rep = self._rep(VERDES_P1)
-        self.assertEqual(self._run("--junit", str(rep), "--peldanos", "5")[0], 2)
-        self.assertEqual(self._run("--junit")[0], 2, "--junit sin reportes es error")
+    def test_empty_scope_is_an_error(self):
+        rep = self._rep(GREEN_R1)
+        self.assertEqual(self._run("--junit", str(rep), "--rungs", "5")[0], 2)
+        self.assertEqual(self._run("--junit")[0], 2, "--junit without reports is an error")
 
-    def test_junit_skipped_fallido_y_no_ejecutado_no_son_verdes(self):
-        rep = self._rep([("ESC-01 alta", "skipped"), ("ESC-02 quinto #1", "passed"),
-                         ("ESC-02 quinto #2", "failed"), ("TestSinID", "passed")])
-        codigo, salida, _ = self._run("--junit", str(rep), "--peldanos", "1")
-        r = json.loads(salida)
-        self.assertEqual(codigo, 1)
-        self.assertTrue(any("ESC-01 fue saltado" in h for h in r["huecos"]))
-        self.assertTrue(any("ESC-02 falló" in h for h in r["huecos"]), "una sola fila roja del esquema basta")
-        self.assertTrue(any("ESC-03 no aparece" in h for h in r["huecos"]))
-        self.assertTrue(any("TestSinID" in a for a in r["avisos"]))
+    def test_junit_skipped_failed_and_not_run_are_not_green(self):
+        rep = self._rep([("SC-01 register", "skipped"), ("SC-02 fifth #1", "passed"),
+                         ("SC-02 fifth #2", "failed"), ("TestWithoutID", "passed")])
+        code, out, _ = self._run("--junit", str(rep), "--rungs", "1")
+        r = json.loads(out)
+        self.assertEqual(code, 1)
+        self.assertTrue(any("SC-01 was skipped" in g for g in r["gaps"]))
+        self.assertTrue(any("SC-02 failed" in g for g in r["gaps"]), "a single red outline row is enough")
+        self.assertTrue(any("SC-03 does not appear" in g for g in r["gaps"]))
+        self.assertTrue(any("TestWithoutID" in w for w in r["warnings"]))
 
-    def test_un_caso_no_puede_cubrir_varios_escenarios(self):
-        rep = self._rep([("smoke ESC-01 ESC-02 ESC-03", "passed")])
-        codigo, salida, _ = self._run("--junit", str(rep), "--ids", "ESC-01,ESC-02,ESC-03")
-        r = json.loads(salida)
-        self.assertEqual(codigo, 1)
-        self.assertTrue(any("varios IDs" in h for h in r["huecos"]))
-        self.assertTrue(any("ESC-01 no aparece" in h for h in r["huecos"]))
+    def test_one_case_cannot_cover_several_scenarios(self):
+        rep = self._rep([("smoke SC-01 SC-02 SC-03", "passed")])
+        code, out, _ = self._run("--junit", str(rep), "--ids", "SC-01,SC-02,SC-03")
+        r = json.loads(out)
+        self.assertEqual(code, 1)
+        self.assertTrue(any("several scenario IDs" in g for g in r["gaps"]))
+        self.assertTrue(any("SC-01 does not appear" in g for g in r["gaps"]))
 
-    def test_nombres_de_go_con_guion_bajo(self):
-        rep = self._rep([("TestAceptacion/ESC-01_alta", "passed"), ("TestAceptacion/ESC-02_quinto", "passed"),
-                         ("TestAceptacion/ESC-03_cuarto", "passed")])
-        resultados, sin_id, _ = trazabilidad.leer_junit([rep])
-        self.assertEqual(set(resultados), {"ESC-01", "ESC-02", "ESC-03"})
-        self.assertEqual(sin_id, [])
+    def test_go_names_with_underscore(self):
+        rep = self._rep([("TestAcceptance/SC-01_register", "passed"), ("TestAcceptance/SC-02_fifth", "passed"),
+                         ("TestAcceptance/SC-03_fourth", "passed")])
+        results, without_id, _ = traceability.read_junit([rep])
+        self.assertEqual(set(results), {"SC-01", "SC-02", "SC-03"})
+        self.assertEqual(without_id, [])
 
-    def test_esc_01_no_se_confunde_con_esc_010(self):
-        rep = self._rep([("ESC-010 algo", "passed")])
-        resultados, _, _ = trazabilidad.leer_junit([rep])
-        self.assertNotIn("ESC-01", resultados)
+    def test_sc_01_is_not_confused_with_sc_010(self):
+        rep = self._rep([("SC-010 something", "passed")])
+        results, _, _ = traceability.read_junit([rep])
+        self.assertNotIn("SC-01", results)
 
-    def test_reporte_anterior_a_la_ejecucion_se_rechaza(self):
-        rep = self._rep(VERDES_P1)
-        viejo = time.time() - 3600
-        os.utime(rep, (viejo, viejo))
-        self.assertEqual(self._run("--junit", str(rep), "--peldanos", "1", "--desde", str(time.time() - 60))[0], 2)
+    def test_report_older_than_the_run_is_rejected(self):
+        rep = self._rep(GREEN_R1)
+        old = time.time() - 3600
+        os.utime(rep, (old, old))
+        self.assertEqual(self._run("--junit", str(rep), "--rungs", "1", "--since", str(time.time() - 60))[0], 2)
 
-    def test_ritmo_por_rebanada_con_ids(self):
-        rep = self._rep([("ESC-02 quinto", "passed"), ("ESC-03 cuarto", "passed")])
-        codigo, salida, _ = self._run("--junit", str(rep), "--ids", "ESC-02,ESC-03")
-        self.assertEqual(codigo, 0, salida)
-        crit = [c["criterio"] for c in json.loads(salida)["cobertura"]]
-        self.assertEqual(crit, ["AC-01", "AC-02"], "solo los criterios de esos escenarios")
-        self.assertEqual(self._run("--junit", str(rep), "--ids", "ESC-42")[0], 2)
+    def test_per_slice_cadence_with_ids(self):
+        rep = self._rep([("SC-02 fifth", "passed"), ("SC-03 fourth", "passed")])
+        code, out, _ = self._run("--junit", str(rep), "--ids", "SC-02,SC-03")
+        self.assertEqual(code, 0, out)
+        crit = [c["criterion"] for c in json.loads(out)["coverage"]]
+        self.assertEqual(crit, ["AC-01", "AC-02"], "only the criteria of those scenarios")
+        self.assertEqual(self._run("--junit", str(rep), "--ids", "SC-42")[0], 2)
 
-    def test_esperar_rojo_antes_de_implementar(self):
-        rep = self._rep([("ESC-01 alta", "failed"), ("ESC-02 quinto", "failed"), ("ESC-03 cuarto", "passed")])
-        codigo, salida, _ = self._run("--junit", str(rep), "--peldanos", "1", "--esperar-rojo")
-        r = json.loads(salida)
-        self.assertEqual(codigo, 0, salida)
-        self.assertTrue(any("ESC-03 está en VERDE antes de implementar" in a for a in r["avisos"]))
-        rep2 = self._rep([("ESC-01 alta", "failed")], "r2.xml")
-        self.assertEqual(self._run("--junit", str(rep2), "--peldanos", "1", "--esperar-rojo")[0], 1,
-                         "lo no ejecutado sigue siendo hueco aunque se espere rojo")
+    def test_expect_red_before_implementing(self):
+        rep = self._rep([("SC-01 register", "failed"), ("SC-02 fifth", "failed"), ("SC-03 fourth", "passed")])
+        code, out, _ = self._run("--junit", str(rep), "--rungs", "1", "--expect-red")
+        r = json.loads(out)
+        self.assertEqual(code, 0, out)
+        self.assertTrue(any("SC-03 is GREEN before implementing" in w for w in r["warnings"]))
+        rep2 = self._rep([("SC-01 register", "failed")], "r2.xml")
+        self.assertEqual(self._run("--junit", str(rep2), "--rungs", "1", "--expect-red")[0], 1,
+                         "anything not executed is still a gap even when red is expected")
 
-    def test_formatos_invalidos_son_error(self):
-        malos = [
-            ESCENARIOS.replace("| ESC-01 | AC-01 | particiones | 1 |", "| ESC-1 | AC-01 | particiones | 1 |"),
-            ESCENARIOS.replace("| ESC-01 | AC-01 | particiones | 1 |", "| ESC-01 | AC-1 | particiones | 1 |"),
-            ESCENARIOS.replace("| ESC-01 | AC-01 | particiones | 1 |", "| ESC-01 | AC-01 | particiones | 9 |"),
-            ESCENARIOS.replace("| activo |\n| ESC-02", "| verde |\n| ESC-02"),
-            ESCENARIOS.replace("| ESC-03 | AC-02, AC-01 |", "| ESC-03 | ninguno |"),
-            ESCENARIOS.replace("| ESC-03 |", "| ESC-02 |"),
-            ESCENARIOS.replace("| Peldaño |", "| Nivel |"),
+    def test_invalid_formats_are_errors(self):
+        bad = [
+            SCENARIOS.replace("| SC-01 | AC-01 | partitions | 1 |", "| SC-1 | AC-01 | partitions | 1 |"),
+            SCENARIOS.replace("| SC-01 | AC-01 | partitions | 1 |", "| SC-01 | AC-1 | partitions | 1 |"),
+            SCENARIOS.replace("| SC-01 | AC-01 | partitions | 1 |", "| SC-01 | AC-01 | partitions | 9 |"),
+            SCENARIOS.replace("| active |\n| SC-02", "| green |\n| SC-02"),
+            SCENARIOS.replace("| SC-03 | AC-02, AC-01 |", "| SC-03 | none |"),
+            SCENARIOS.replace("| SC-03 |", "| SC-02 |"),
+            SCENARIOS.replace("| Rung |", "| Level |"),
         ]
-        for texto in malos:
-            (self.d / "escenarios.md").write_text(texto)
-            self.assertEqual(self._run()[0], 2, texto[:300])
-        (self.d / "escenarios.md").write_text(ESCENARIOS)
-        for crit in ("# nada", "## AC-1: corto\n"):
-            (self.d / "criterios.md").write_text(crit)
+        for text in bad:
+            (self.d / "scenarios.md").write_text(text)
+            self.assertEqual(self._run()[0], 2, text[:300])
+        (self.d / "scenarios.md").write_text(SCENARIOS)
+        for crit in ("# nothing", "## AC-1: short\n"):
+            (self.d / "criteria.md").write_text(crit)
             self.assertEqual(self._run()[0], 2, crit)
 
-    def test_encabezados_en_plural(self):
-        texto = ESCENARIOS.replace("| ID | Criterio | Técnica | Peldaño |", "| ID | Criterios | Técnica | Peldaños |")
-        self.assertEqual(len(trazabilidad.leer_escenarios(texto)), 7)
+    def test_plural_headers(self):
+        text = SCENARIOS.replace("| ID | Criterion | Technique | Rung |", "| ID | Criteria | Technique | Rungs |")
+        self.assertEqual(len(traceability.read_scenarios(text)), 7)
 
 
-# ---------------------------------------------------------------- mutantes
+# ---------------------------------------------------------------- mutants
 
 CHECK = textwrap.dedent("""\
     import os, sys
-    from app import limite
-    ok = limite(4) and not limite(5)
-    rep = os.environ.get("QA_REPORTES")
+    from app import limit
+    ok = limit(4) and not limit(5)
+    rep = os.environ.get("QA_REPORTS")
     if rep:
-        fallo = "" if ok else "<failure message='limite'/>"
+        failure = "" if ok else "<failure message='limit'/>"
         open(os.path.join(rep, "r.xml"), "w").write(
-            f'<testsuite><testcase name="ESC-01 limite">{fallo}</testcase></testsuite>')
+            f'<testsuite><testcase name="SC-01 limit">{failure}</testcase></testsuite>')
     sys.exit(0 if ok else 1)
     """)
 
 
 def _repo(dir_: Path) -> Path:
     _git_init(dir_)
-    (dir_ / "app.py").write_text("def limite(n):\n    return n < 5\n")
+    (dir_ / "app.py").write_text("def limit(n):\n    return n < 5\n")
     (dir_ / "check.py").write_text(CHECK)
     (dir_ / "acceptance").mkdir()
-    (dir_ / "acceptance/ESC-01.txt").write_text("oráculo")
-    (dir_ / ".gitignore").write_text("ignorado.txt\n")
+    (dir_ / "acceptance/SC-01.txt").write_text("oracle")
+    (dir_ / ".gitignore").write_text("ignored.txt\n")
     _commit(dir_, "init")
     return dir_
 
 
-def _parche(repo: Path, nuevo: str, archivo: str = "app.py") -> str:
-    """Construye el parche como lo indica la skill: diff -u del archivo actual contra una copia editada."""
+def _patch(repo: Path, new: str, file: str = "app.py") -> str:
+    """Builds the patch the way the skill says: diff -u of the current file against an edited copy."""
     with tempfile.TemporaryDirectory() as t:
-        copia = Path(t) / Path(archivo).name
-        copia.write_text(nuevo)
-        r = subprocess.run(["diff", "-u", "--label", f"a/{archivo}", "--label", f"b/{archivo}",
-                            str(repo / archivo), str(copia)], capture_output=True, text=True)
+        copy = Path(t) / Path(file).name
+        copy.write_text(new)
+        r = subprocess.run(["diff", "-u", "--label", f"a/{file}", "--label", f"b/{file}",
+                            str(repo / file), str(copy)], capture_output=True, text=True)
     assert r.returncode == 1, r.stderr
     return r.stdout
 
 
-class TestMutantes(unittest.TestCase):
+class TestMutants(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.repo = _repo(Path(self.tmp.name) / "repo")
-        self.parches = Path(self.tmp.name) / "parches"
-        self.parches.mkdir()
+        self.patches = Path(self.tmp.name) / "patches"
+        self.patches.mkdir()
         self.cmd = f"{sys.executable} check.py"
 
     def tearDown(self):
         self.tmp.cleanup()
 
-    def _estado(self):
+    def _status(self):
         return subprocess.run(["git", "-C", str(self.repo), "status", "--porcelain"],
                               capture_output=True, text=True).stdout
 
-    def _p(self, nombre, contenido):
-        p = self.parches / nombre
-        p.write_text(contenido)
+    def _p(self, name, content):
+        p = self.patches / name
+        p.write_text(content)
         return p
 
-    def test_resultados_sin_tocar_el_repo(self):
-        self._p("M-01-limite.patch", _parche(self.repo, "def limite(n):\n    return n <= 5\n"))
-        self._p("M-02-equivalente.patch", _parche(self.repo, "def limite(n):\n    return not n >= 5\n"))
-        self._p("M-03-roto.patch", "diff --git a/nada.py b/nada.py\n--- a/nada.py\n+++ b/nada.py\n@@ -1 +1 @@\n-x\n+y\n")
-        self._p("M-04-no-compila.patch", _parche(self.repo, "def limite(n):\n    return n <\n"))
-        self._p("M-05-oraculo.patch", _parche(self.repo, "otro oráculo\n", "acceptance/ESC-01.txt"))
-        antes, contenido = self._estado(), (self.repo / "app.py").read_text()
-        r = mutantes.ejecutar(self.repo, self.cmd, sorted(self.parches.iterdir()), timeout=60,
-                              prohibidas=["acceptance"])
-        res = {m["parche"]: m["resultado"] for m in r["mutantes"]}
-        self.assertEqual(res, {"M-01-limite.patch": "detectado", "M-02-equivalente.patch": "sobrevive",
-                               "M-03-roto.patch": "no-aplica", "M-04-no-compila.patch": "error-harness",
-                               "M-05-oraculo.patch": "rechazado"})
-        detectado = next(m for m in r["mutantes"] if m["parche"] == "M-01-limite.patch")
-        self.assertEqual(detectado["escenarios_rojos"], ["ESC-01"])
-        self.assertEqual(self._estado(), antes)
-        self.assertEqual((self.repo / "app.py").read_text(), contenido)
+    def test_results_without_touching_the_repo(self):
+        self._p("M-01-limit.patch", _patch(self.repo, "def limit(n):\n    return n <= 5\n"))
+        self._p("M-02-equivalent.patch", _patch(self.repo, "def limit(n):\n    return not n >= 5\n"))
+        self._p("M-03-broken.patch", "diff --git a/none.py b/none.py\n--- a/none.py\n+++ b/none.py\n@@ -1 +1 @@\n-x\n+y\n")
+        self._p("M-04-does-not-compile.patch", _patch(self.repo, "def limit(n):\n    return n <\n"))
+        self._p("M-05-oracle.patch", _patch(self.repo, "another oracle\n", "acceptance/SC-01.txt"))
+        before, content = self._status(), (self.repo / "app.py").read_text()
+        r = mutants.run(self.repo, self.cmd, sorted(self.patches.iterdir()), timeout=60,
+                        forbidden=["acceptance"])
+        res = {m["patch"]: m["result"] for m in r["mutants"]}
+        self.assertEqual(res, {"M-01-limit.patch": "detected", "M-02-equivalent.patch": "survived",
+                               "M-03-broken.patch": "not-applicable", "M-04-does-not-compile.patch": "harness-error",
+                               "M-05-oracle.patch": "rejected"})
+        detected = next(m for m in r["mutants"] if m["patch"] == "M-01-limit.patch")
+        self.assertEqual(detected["red_scenarios"], ["SC-01"])
+        self.assertEqual(self._status(), before)
+        self.assertEqual((self.repo / "app.py").read_text(), content)
         wts = subprocess.run(["git", "-C", str(self.repo), "worktree", "list"], capture_output=True, text=True).stdout
-        self.assertEqual(len(wts.strip().splitlines()), 1, "no deben quedar worktrees temporales")
-        self.assertEqual(r["huella"], mutantes.huella(self.repo))
+        self.assertEqual(len(wts.strip().splitlines()), 1, "no temporary worktrees may be left behind")
+        self.assertEqual(r["fingerprint"], mutants.fingerprint(self.repo))
 
-    def test_usa_cambios_sin_commitear_y_no_rastreados(self):
-        (self.repo / "app.py").write_text("def limite(n):\n    return n < 5  # editado sin commit\n")
-        (self.repo / "extra.py").write_text("VALOR = 1\n")
+    def test_uses_uncommitted_changes_and_untracked_files(self):
+        (self.repo / "app.py").write_text("def limit(n):\n    return n < 5  # edited without commit\n")
+        (self.repo / "extra.py").write_text("VALUE = 1\n")
         (self.repo / "check.py").write_text("import extra\n" + CHECK)
-        p = self._p("M-01.patch", _parche(self.repo, "def limite(n):\n    return n <= 5  # editado sin commit\n"))
-        r = mutantes.ejecutar(self.repo, self.cmd, [p], timeout=60)
-        self.assertEqual(r["base"]["estado"], "pasa")
-        self.assertEqual(r["mutantes"][0]["resultado"], "detectado")
+        p = self._p("M-01.patch", _patch(self.repo, "def limit(n):\n    return n <= 5  # edited without commit\n"))
+        r = mutants.run(self.repo, self.cmd, [p], timeout=60)
+        self.assertEqual(r["baseline"]["status"], "pass")
+        self.assertEqual(r["mutants"][0]["result"], "detected")
 
-    def test_repositorio_anidado_no_rompe(self):
-        _git_init(self.repo / "anidado")
-        p = self._p("M-01.patch", _parche(self.repo, "def limite(n):\n    return n <= 5\n"))
-        r = mutantes.ejecutar(self.repo, self.cmd, [p], timeout=60)
-        self.assertEqual(r["mutantes"][0]["resultado"], "detectado")
+    def test_nested_repository_does_not_break(self):
+        _git_init(self.repo / "nested")
+        p = self._p("M-01.patch", _patch(self.repo, "def limit(n):\n    return n <= 5\n"))
+        r = mutants.run(self.repo, self.cmd, [p], timeout=60)
+        self.assertEqual(r["mutants"][0]["result"], "detected")
 
-    def test_huella_cambia_con_el_codigo(self):
-        h1 = mutantes.huella(self.repo)
-        (self.repo / "app.py").write_text("def limite(n):\n    return n < 6\n")
-        self.assertNotEqual(h1["cambios"], mutantes.huella(self.repo)["cambios"])
-        self.assertEqual(h1["head"], mutantes.huella(self.repo)["head"])
+    def test_fingerprint_changes_with_the_code(self):
+        f1 = mutants.fingerprint(self.repo)
+        (self.repo / "app.py").write_text("def limit(n):\n    return n < 6\n")
+        self.assertNotEqual(f1["changes"], mutants.fingerprint(self.repo)["changes"])
+        self.assertEqual(f1["head"], mutants.fingerprint(self.repo)["head"])
 
-    def test_base_roja_o_sin_reportes_aborta(self):
+    def test_red_baseline_or_no_reports_aborts(self):
         p = self._p("M-01.patch", "x")
-        (self.repo / "app.py").write_text("def limite(n):\n    return True\n")
-        with self.assertRaises(mutantes.ErrorDeMutacion):
-            mutantes.ejecutar(self.repo, self.cmd, [p], timeout=60)
-        (self.repo / "app.py").write_text("def limite(n):\n    return n < 5\n")
-        with self.assertRaises(mutantes.ErrorDeMutacion):
-            mutantes.ejecutar(self.repo, f"{sys.executable} -c 'pass'", [p], timeout=60)
+        (self.repo / "app.py").write_text("def limit(n):\n    return True\n")
+        with self.assertRaises(mutants.MutationError):
+            mutants.run(self.repo, self.cmd, [p], timeout=60)
+        (self.repo / "app.py").write_text("def limit(n):\n    return n < 5\n")
+        with self.assertRaises(mutants.MutationError):
+            mutants.run(self.repo, f"{sys.executable} -c 'pass'", [p], timeout=60)
 
-    def test_timeout_mata_el_grupo_y_no_cuenta_como_detectado(self):
-        marca = Path(self.tmp.name) / "huerfano.txt"
-        cmd = f"(sleep 6; touch {marca}) & sleep 30"
-        r = mutantes.correr(cmd, self.repo, 2, {})
-        self.assertEqual(r["estado"], "timeout")
+    def test_timeout_kills_the_group_and_does_not_count_as_detected(self):
+        marker = Path(self.tmp.name) / "orphan.txt"
+        cmd = f"(sleep 6; touch {marker}) & sleep 30"
+        r = mutants.run_command(cmd, self.repo, 2, {})
+        self.assertEqual(r["status"], "timeout")
         time.sleep(6)
-        self.assertFalse(marca.exists(), "el proceso huérfano debió morir con el grupo")
+        self.assertFalse(marker.exists(), "the orphan process should have died with the group")
 
-    def test_nieto_en_segundo_plano_no_provoca_timeout_falso(self):
-        r = mutantes.correr("(sleep 20 &) ; exit 1", self.repo, 10, {})
-        self.assertEqual(r["estado"], "falla")
-        self.assertLess(r["segundos"], 5)
+    def test_background_grandchild_does_not_cause_false_timeout(self):
+        r = mutants.run_command("(sleep 20 &) ; exit 1", self.repo, 10, {})
+        self.assertEqual(r["status"], "fail")
+        self.assertLess(r["seconds"], 5)
 
-    def test_cli_codigo_1_con_sobrevivientes(self):
-        p = self._p("M-02.patch", _parche(self.repo, "def limite(n):\n    return not n >= 5\n"))
-        codigo, salida, _ = _silencio(mutantes.main, ["ejecutar", "--cmd", self.cmd, "--repo", str(self.repo),
-                                                      "--timeout", "60", str(p)])
-        self.assertEqual(codigo, 1)
-        self.assertIn("Detectados: 0/1", salida)
+    def test_cli_exit_code_1_with_survivors(self):
+        p = self._p("M-02.patch", _patch(self.repo, "def limit(n):\n    return not n >= 5\n"))
+        code, out, _ = _quiet(mutants.main, ["run", "--cmd", self.cmd, "--repo", str(self.repo),
+                                             "--timeout", "60", str(p)])
+        self.assertEqual(code, 1)
+        self.assertIn("Detected: 0/1", out)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 ---
 name: go-design-rules
-description: "Cross-cutting design principles applied the idiomatic Go way: Law of Demeter, Tell-Don't-Ask, Command–Query Separation, named types over primitives, making illegal states unrepresentable (parse, don't validate), explicit dependencies instead of globals, and DRY/SOLID read through a Go lens. Use when designing or reviewing Go code for coupling, type-safety or dependency smells. Triggers: \"law of demeter\", \"train wreck\", \"tell don't ask\", \"CQS\", \"stringly-typed\", \"boolean blindness\", \"named types\", \"illegal states unrepresentable\", \"parse don't validate\", \"dependency injection in Go\", \"global variables\", \"singleton\", \"DRY\", \"SOLID in Go\", \"design smell\", \"acoplamiento\", \"ley de Demeter\", \"estados ilegales\", \"inyección de dependencias\"."
+description: "Cross-cutting design principles applied the idiomatic Go way: Law of Demeter, Tell-Don't-Ask, Command–Query Separation, named types over primitives, making illegal states unrepresentable (parse, don't validate), explicit dependencies instead of globals, and DRY/SOLID read through a Go lens. Use when designing or reviewing Go code for coupling, type-safety or dependency smells. Triggers: \"law of demeter\", \"train wreck\", \"tell don't ask\", \"CQS\", \"stringly-typed\", \"boolean blindness\", \"named types\", \"illegal states unrepresentable\", \"parse don't validate\", \"dependency injection in Go\", \"global variables\", \"singleton\", \"DRY\", \"SOLID in Go\", \"design smell\"."
 license: MIT
 ---
 

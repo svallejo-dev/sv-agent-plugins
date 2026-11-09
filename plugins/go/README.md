@@ -1,21 +1,20 @@
 # go
 
-Dominio Go del marketplace `sv-agent-plugins`.
+Go domain of the `sv-agent-plugins` marketplace.
 
-- **Profundidad**: `senior-go-idiomatic`, `go-design-rules`, `ddd-go-idiomatic`.
-- **Simplificación**: `go-simplify` limpia código Go sin cambiar su comportamiento: primero herramientas deterministas (`gofmt -s`, `goimports`, `go fix` con los modernizadores de Go 1.26, `staticcheck` S1) y después un catálogo de simplificaciones de criterio (comentarios, ruido, anidamiento, errores, código muerto, duplicación), con tests en verde antes y después de cada paso.
-- **Roles para el plugin `ingenieria`**: `go-review` (lo carga `code-review`), `go-testing` (`tdd`), `go-debugging` (`diagnosing-bugs`) y `go-design` (`codebase-design`). Ver el [contrato de lenguajes](../../docs/CONTRATO-LENGUAJES.md).
+- **Depth**: `senior-go-idiomatic`, `go-design-rules`, `ddd-go-idiomatic`.
+- **Simplification**: `go-simplify` cleans up Go code without changing its behavior: first deterministic tools (`gofmt -s`, `goimports`, `go fix` with the Go 1.26 modernizers, `staticcheck` S1) and then a catalog of judgment simplifications (comments, noise, nesting, errors, dead code, duplication), with green tests before and after each step.
+- **Roles for the `engineering` plugin**: `go-review` (loaded by `code-review`), `go-testing` (`tdd`), `go-debugging` (`diagnosing-bugs`) and `go-design` (`codebase-design`). See the [language contract](../../docs/LANGUAGE-CONTRACT.md).
 
-Funciona solo, pero rinde más con `ingenieria` instalado.
+It works on its own, but does more with `engineering` installed.
 
-## Instalación
+## Installation
 
-Ver el [README del repositorio](../../README.md#instalación) para Claude Code, Codex, GitHub Copilot, Cursor y Windsurf. En resumen, con Claude Code:
+See the [repository README](../../README.md#installation) for Claude Code, Codex, GitHub Copilot, Cursor and Windsurf. In short, with Claude Code:
 
 ```bash
 claude plugin marketplace add svallejo-dev/sv-agent-plugins
 claude plugin install go@sv-agent-plugins
 ```
 
-
-Todas las skills responden en español y conservan en inglés los términos técnicos habituales. Licencia MIT.
+All skills respond in the user's language. MIT license.

@@ -1,47 +1,47 @@
 ---
 name: go-debugging
-description: "Comandos y herramientas de Go para cada técnica de diagnóstico (aislar un test, repetir, -race, fuzzing, git bisect run, Delve, slog, benchmarks, benchstat, pprof, trace). La carga la skill diagnosing-bugs cuando el código es Go; úsala también cuando el usuario depure algo en Go."
+description: "Go commands and tools for each diagnosis technique (isolate a test, repeat, -race, fuzzing, git bisect run, Delve, slog, benchmarks, benchstat, pprof, trace). The diagnosing-bugs skill loads it when the code is Go; also use it when the user is debugging something in Go."
 license: MIT
 ---
 
-# Debugging en Go
+# Debugging in Go
 
-Responde en español y conserva en inglés los términos técnicos habituales.
+Respond in the user's language; keep common technical terms in English.
 
-Complementa a `diagnosing-bugs`: allí está la disciplina (loop que se pone rojo, minimizar, hipótesis falsables, instrumentar, regresión, limpieza); aquí, el comando de Go para cada técnica.
+Complements `diagnosing-bugs`: that skill holds the discipline (a loop that turns red, minimize, falsifiable hypotheses, instrument, regression, cleanup); this one, the Go command for each technique.
 
-## Fase 1: construir el loop
+## Phase 1: build the loop
 
-| Técnica | En Go |
+| Technique | In Go |
 |---|---|
-| Test que falla aislado | `go test -run 'TestX/subcaso' -count=1 ./ruta/...` |
-| Script HTTP | `curl` contra el servicio levantado con `go run ./cmd/<app>` |
-| Replay de una traza | Guarda el payload en `testdata/` y pásalo por el handler con `httptest` |
-| Harness desechable | Un `_test.go` temporal que construye el subsistema mínimo con fakes |
-| Fuzz | `go test -fuzz=FuzzX -fuzztime=60s ./ruta/` (el corpus que falla queda en `testdata/fuzz/`) |
-| Bisección | `git bisect start <malo> <bueno> && git bisect run go test -run TestX -count=1 ./ruta/...` |
-| Diferencial | Mismo input al servicio legacy y al nuevo; compara las respuestas con `cmp.Diff` o `diff` |
+| Failing test in isolation | `go test -run 'TestX/subcase' -count=1 ./path/...` |
+| HTTP script | `curl` against the service started with `go run ./cmd/<app>` |
+| Replay of a trace | Save the payload in `testdata/` and pass it through the handler with `httptest` |
+| Throwaway harness | A temporary `_test.go` that builds the minimal subsystem with fakes |
+| Fuzz | `go test -fuzz=FuzzX -fuzztime=60s ./path/` (the failing corpus stays in `testdata/fuzz/`) |
+| Bisection | `git bisect start <bad> <good> && git bisect run go test -run TestX -count=1 ./path/...` |
+| Differential | The same input to the legacy and the new service; compare the responses with `cmp.Diff` or `diff` |
 
-**Hacerlo tight:** `-run` para acotar, `-count=1` para saltar la caché, fija el tiempo inyectando un reloj, fija la semilla (`rand.New(rand.NewPCG(seed, seed))` con `math/rand/v2`), aísla el filesystem con `t.TempDir()`.
+**Making it tight:** `-run` to narrow it, `-count=1` to skip the cache, pin the time by injecting a clock, pin the seed (`rand.New(rand.NewPCG(seed, seed))` with `math/rand/v2`), isolate the file system with `t.TempDir()`.
 
-**Bugs no deterministas:** `-count=100`, `-race`, `-cpu=1,4,8`, `-parallel=16`, y `GOMAXPROCS` variable. Para lógica con tiempo y goroutines, `testing/synctest` hace determinista la planificación.
+**Non-deterministic bugs:** `-count=100`, `-race`, `-cpu=1,4,8`, `-parallel=16`, and a varying `GOMAXPROCS`. For logic with time and goroutines, `testing/synctest` makes scheduling deterministic.
 
-## Fase 4: instrumentar
+## Phase 4: instrument
 
-- **Debugger**: Delve. `dlv test ./ruta -- -test.run TestX` o `dlv debug ./cmd/<app>`; `break archivo.go:42`, `continue`, `print var`, `goroutines`.
-- **Logs etiquetados**: `slog.Debug("[DEBUG-a4f2] estado", "id", id)`; al final, `grep -rn "DEBUG-a4f2" .` debe quedar vacío.
-- **Goroutines colgadas**: `curl localhost:6060/debug/pprof/goroutine?debug=2` si el servicio expone `net/http/pprof`, o `SIGQUIT` para volcar los stacks.
+- **Debugger**: Delve. `dlv test ./path -- -test.run TestX` or `dlv debug ./cmd/<app>`; `break file.go:42`, `continue`, `print var`, `goroutines`.
+- **Tagged logs**: `slog.Debug("[DEBUG-a4f2] state", "id", id)`; at the end, `grep -rn "DEBUG-a4f2" .` must come back empty.
+- **Hung goroutines**: `curl localhost:6060/debug/pprof/goroutine?debug=2` if the service exposes `net/http/pprof`, or `SIGQUIT` to dump the stacks.
 
-## Rama de rendimiento
+## Performance branch
 
 ```bash
-go test -bench=BenchmarkX -benchmem -count=10 ./ruta/ > antes.txt
-# aplica el cambio
-go test -bench=BenchmarkX -benchmem -count=10 ./ruta/ > despues.txt
-benchstat antes.txt despues.txt                       # diferencia con significancia estadística
-go test -bench=BenchmarkX -cpuprofile=cpu.out ./ruta/ && go tool pprof -http=:8081 cpu.out
-go test -bench=BenchmarkX -memprofile=mem.out ./ruta/ # también -mutexprofile, -blockprofile
-go test -trace=trace.out -run TestX ./ruta/ && go tool trace trace.out
+go test -bench=BenchmarkX -benchmem -count=10 ./path/ > before.txt
+# apply the change
+go test -bench=BenchmarkX -benchmem -count=10 ./path/ > after.txt
+benchstat before.txt after.txt                        # difference with statistical significance
+go test -bench=BenchmarkX -cpuprofile=cpu.out ./path/ && go tool pprof -http=:8081 cpu.out
+go test -bench=BenchmarkX -memprofile=mem.out ./path/ # also -mutexprofile, -blockprofile
+go test -trace=trace.out -run TestX ./path/ && go tool trace trace.out
 ```
 
-En producción, compara percentiles (p50/p95/p99) en el APM antes y después; el promedio esconde la cola. Para escape analysis y presión del GC: `go build -gcflags=-m` y `GODEBUG=gctrace=1`; detalle en `references/memory-pointers.md` de `senior-go-idiomatic`.
+In production, compare percentiles (p50/p95/p99) in the APM before and after; the average hides the tail. For escape analysis and GC pressure: `go build -gcflags=-m` and `GODEBUG=gctrace=1`; details in `references/memory-pointers.md` of `senior-go-idiomatic`.

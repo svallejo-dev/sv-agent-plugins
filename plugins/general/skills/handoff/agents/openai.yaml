@@ -1,5 +1,5 @@
 interface:
   display_name: "Handoff"
-  short_description: "Traspasa el trabajo a otra sesión o herramienta"
+  short_description: "Hands the work over to another session or tool"
 policy:
   allow_implicit_invocation: false

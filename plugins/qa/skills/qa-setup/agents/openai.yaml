@@ -1,5 +1,5 @@
 interface:
-  display_name: "Setup de QA"
-  short_description: "Configura modo, peldaños y comandos de QA"
+  display_name: "QA setup"
+  short_description: "Sets up the QA mode, rungs and commands"
 policy:
   allow_implicit_invocation: false

@@ -1,0 +1,1 @@
+Our checkout service serves 800 req/s at peak. Each request synchronously calls the payment gateway, whose p50 is 120 ms and p99 is 1.4 s. The HTTP pool to the gateway has 100 connections per instance and we run 4 instances. In the next campaign we expect 3× the current peak. Will the pool hold? What would you change?

@@ -1,31 +1,31 @@
-# Mecánica de skills
+# Skill mechanics
 
-La rama específica de skills de [writing-for-agents](SKILL.md): lo que cambia cuando el documento es una skill (frontmatter, elección de invocación y skills router). Todo lo demás sobre cómo escribirla es la referencia universal de `SKILL.md`.
+The skill-specific branch of [writing-for-agents](SKILL.md): what changes when the document is a skill (frontmatter, invocation choice and router skills). Everything else about how to write it is the universal reference in `SKILL.md`.
 
-## Invocación
+## Invocation
 
-Dos opciones, que intercambian las dos cargas:
+Two options, which trade the two loads:
 
-- Una skill **invocada por el modelo** conserva su `description`, así el agente puede dispararla por su cuenta y otras skills pueden alcanzarla. Puedes seguir escribiendo su nombre: la invocación por el modelo siempre _incluye_ el alcance del usuario; una descripción solo añade descubrimiento por el agente, nunca quita el del humano. La descripción es el puntero de contexto principal de la skill y está forzada a estar siempre cargada: carga de contexto permanente a cambio de descubribilidad. Una skill invocada por el modelo cuyo contenido es todo referencia también sirve como hogar de referencia compartida: otra skill puede invocarla, así la referencia que necesitan varias skills vive en un solo sitio. Mecánica: omite `disable-model-invocation` y escribe una descripción para el modelo con las ramas de disparo (aplican completas las reglas de punteros de `SKILL.md`).
-- Una skill **invocada por el usuario** saca la descripción del alcance del agente: solo el humano que escribe su nombre puede invocarla, y ninguna otra skill puede. Cero carga de contexto, pero gasta carga cognitiva: tú eres el índice que debe recordar que existe. Mecánica: pon `disable-model-invocation: true`; la `description` pasa a ser para humanos: un resumen de una línea, sin listas de disparadores.
+- A **model-invoked** skill keeps its `description`, so the agent can fire it on its own and other skills can reach it. You can still type its name: model invocation always _includes_ the user's reach; a description only adds discovery by the agent, it never takes away the human's. The description is the skill's main context pointer and it is forced to be always loaded: permanent context load in exchange for discoverability. A model-invoked skill whose content is all reference also works as a home for shared reference: another skill can invoke it, so the reference several skills need lives in one place. Mechanics: write a description for the model with the triggering branches (the pointer rules of `SKILL.md` apply in full).
+- A **user-invoked** skill takes the description out of the agent's reach: only the human typing its name can invoke it, and no other skill can. Zero context load, but it spends cognitive load: you are the index that must remember it exists. Mechanics: in Claude Code, `disable-model-invocation: true`; in Codex, `policy.allow_implicit_invocation: false` in `agents/openai.yaml`. The `description` becomes for humans: a one-line summary, with no trigger lists. (In this repository the standard frontmatter does not allow tool-specific fields, so user-only skills say "Use it only when the user explicitly asks for it" in their description and carry `agents/openai.yaml`.)
 
-Elige invocación por el modelo solo cuando el agente deba alcanzar la skill por su cuenta, u otra skill deba hacerlo. Si solo se dispara a mano, hazla invocada por el usuario y no pagues carga de contexto.
+Choose model invocation only when the agent must reach the skill on its own, or another skill must. If it is only fired by hand, make it user-invoked and do not pay context load.
 
-La referencia compartida que necesitan dos skills invocadas por el usuario no puede vivir en ninguna de ellas: sin descripción, ninguna puede disparar a la otra. Llévala a un archivo plano fuera del sistema de skills: referencia externa que cualquier skill puede apuntar.
+Shared reference that two user-invoked skills need cannot live in either of them: without a description, neither can fire the other. Move it to a plain file outside the skill system: external reference any skill can point to.
 
-## Plugins y portabilidad
+## Plugins and portability
 
-Dentro de un plugin de Claude Code, las skills quedan con espacio de nombres (`ingenieria:tdd`). Las demás herramientas (Codex, Copilot, Cursor, Windsurf) instalan las skills en carpetas planas y las invocan por su nombre a secas. Para que una skill funcione en todas:
+Inside a Claude Code plugin, skills get a namespace (`engineering:tdd`). The other tools (Codex, Copilot, Cursor, Windsurf) install skills into flat folders and invoke them by their bare name. For a skill to work in all of them:
 
-- Dale un **nombre único y específico** (`qa-verify`, no `verify`; `go-testing`, no `testing`): en una carpeta plana dos skills con el mismo nombre chocan.
-- Cuando una skill invoque a otra, usa el **nombre a secas** (`tdd`, `grilling`), no `plugin:skill`.
-- Cumple el estándar Agent Skills en el frontmatter: solo `name` (igual a la carpeta), `description` (entre comillas si contiene `: `), y los opcionales `license`, `compatibility`, `metadata` y `allowed-tools`. Campos propios de una herramienta, como `disable-model-invocation`, hacen que el validador del estándar la rechace.
-- Si varias skills comparten referencias o scripts, ponlos en una skill base hermana (`qa-core`) y enlázala con rutas relativas (`../qa-core/...`), no en carpetas del plugin que una instalación de skills sueltas no copia.
+- Give it a **unique, specific name** (`qa-verify`, not `verify`; `go-testing`, not `testing`): in a flat folder two skills with the same name clash.
+- When a skill invokes another, use the **bare name** (`tdd`, `grilling`), not `plugin:skill`.
+- Follow the Agent Skills standard in the frontmatter: only `name` (equal to the folder), `description` (quoted if it contains `: `), and the optional `license`, `compatibility`, `metadata` and `allowed-tools`. Tool-specific fields, such as `disable-model-invocation`, make the standard's validator reject it.
+- If several skills share references or scripts, put them in a sibling base skill (`qa-core`) and link it with relative paths (`../qa-core/...`), not in plugin folders that a loose-skills installation does not copy.
 
-## Dividir por invocación
+## Splitting by invocation
 
-El corte por invocación (el corte por secuencia está en `SKILL.md`): separa una skill invocada por el modelo cuando tengas una palabra guía distinta que deba dispararla por sí sola (una palabra que de verdad usas en tus prompts), u otra skill necesite alcanzarla. Pagas carga de contexto por la nueva descripción siempre cargada, así que ese alcance independiente tiene que valer la pena.
+The cut by invocation (the cut by sequence is in `SKILL.md`): split off a model-invoked skill when you have a distinct leading word that must fire it on its own (a word you really use in your prompts), or another skill needs to reach it. You pay context load for the new always-loaded description, so that independent reach has to be worth it.
 
-## Skills router
+## Router skills
 
-Cuando las skills invocadas por el usuario se multiplican más allá de lo que puedes recordar, esa carga cognitiva acumulada se cura con una **skill router**: una skill invocada por el usuario que nombra a las demás y cuándo recurrir a cada una, para que el humano tenga una sola skill que recordar en vez de muchas. Solo puede sugerir, nunca dispararlas: las skills invocadas por el usuario no tienen descripción, así que nada salvo el humano puede alcanzarlas.
+When user-invoked skills multiply beyond what you can remember, that accumulated cognitive load is cured with a **router skill**: a user-invoked skill that names the others and when to reach for each, so the human has a single skill to remember instead of many. It can only suggest, never fire them: user-invoked skills have no description, so nothing but the human can reach them.

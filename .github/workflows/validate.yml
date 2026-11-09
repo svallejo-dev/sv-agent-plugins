@@ -1,0 +1,62 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Manifests up to date with catalog.json
+        run: python3 tools/build_manifests.py --check
+
+      - name: Every changed plugin bumped its version
+        if: github.event_name == 'pull_request' || github.event.before != '0000000000000000000000000000000000000000'
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then BASE="origin/${{ github.base_ref }}"; else BASE="${{ github.event.before }}"; fi
+          python3 tools/check_versions.py --base "$BASE"
+
+      - name: Skills conform to the Agent Skills standard
+        run: |
+          pip install skills-ref
+          for d in plugins/*/skills/*/; do agentskills validate "$d"; done
+
+      - name: Script tests (qa-core and capacity-estimation)
+        run: |
+          git config --global user.email ci@example.com
+          git config --global user.name ci
+          python3 -m unittest discover -s plugins/qa/skills/qa-core/scripts/tests
+          python3 -m unittest discover -s plugins/architecture/skills/capacity-estimation/scripts -p 'test_*.py'
+
+      - name: Plugins and marketplace valid for Claude Code
+        run: |
+          npm install -g @anthropic-ai/claude-code
+          claude plugin validate .
+          for p in plugins/*/; do claude plugin validate "$p"; done
+
+      - name: Installer (Windsurf, Cursor, Codex, Claude, Copilot) dry run
+        run: |
+          for t in windsurf cursor codex claude copilot; do ./install.sh --tool "$t" --project-dir "$RUNNER_TEMP/p" --dry-run; done
+          HOME="$RUNNER_TEMP/h" ./install.sh --tool windsurf --scope user --plugins qa
+          for d in "$RUNNER_TEMP"/h/.codeium/windsurf/skills/*/; do agentskills validate "$d"; done
+
+      - name: Global rules (installer and template size)
+        run: |
+          test "$(wc -m < templates/global-rules.md)" -le 6000
+          HOME="$RUNNER_TEMP/g" tools/install-global-rules.sh
+          test -L "$RUNNER_TEMP/g/.codex/AGENTS.md"
+          grep -qx "@$RUNNER_TEMP/g/.agents/AGENTS.md" "$RUNNER_TEMP/g/.claude/CLAUDE.md"

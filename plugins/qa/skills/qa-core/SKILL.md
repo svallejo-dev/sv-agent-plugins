@@ -1,34 +1,34 @@
 ---
 name: qa-core
-description: "Base compartida del dominio QA: modelo de roles (dev, QA, ejecutor, humano), escalera de ambientes, formatos de criterios, escenarios y hallazgos, y los scripts deterministas (sello de integridad, trazabilidad, mutantes). Úsala cuando otra skill qa-* la referencie, o cuando el usuario pregunte cómo funciona el modelo de QA, qué garantiza el sello o cómo se trazan criterios a tests."
+description: "Shared base of the QA domain: role model (dev, QA, executor, human), environment ladder, formats for criteria, scenarios and findings, and the deterministic scripts (integrity seal, traceability, mutants). Use it when another qa-* skill references it, or when the user asks how the QA model works, what the seal guarantees or how criteria are traced to tests."
 license: MIT
 ---
 
-# QA: base compartida
+# QA: shared base
 
-Responde en español y conserva en inglés los términos técnicos habituales.
+Respond in the user's language; keep common technical terms in English.
 
-Esta skill no ejecuta un flujo: es la referencia y las herramientas que comparten todas las skills `qa-*`. Las demás skills apuntan aquí con rutas relativas (`../qa-core/...`), así que **debe estar instalada junto a ellas**, como carpeta hermana, en cualquier herramienta.
+This skill does not run a workflow: it is the reference and the tools that every `qa-*` skill shares. The other skills point here with relative paths (`../qa-core/...`), so **it must be installed next to them**, as a sibling folder, in any tool.
 
-**Analogía:** es el reglamento y la mesa de control de un partido. Los jugadores (las demás skills) juegan; el reglamento dice qué vale y la mesa cuenta.
+**Analogy:** it is the rulebook and the scorer's table of a match. The players (the other skills) play; the rulebook says what counts and the table keeps the score.
 
-## Referencias
+## References
 
-| Archivo | Qué contiene |
+| File | What it contains |
 |---|---|
-| [referencias/modelo-de-roles.md](referencias/modelo-de-roles.md) | Quién escribe qué y quién aprueba; modos solo y dúo; barrera de información N1-N3; escalamiento; qué garantiza el sello y qué no |
-| [referencias/escalera-de-ambientes.md](referencias/escalera-de-ambientes.md) | Peldaños 0 a 5, regla de asignación de escenarios, ritmos de ejecución |
-| [referencias/formatos.md](referencias/formatos.md) | Handoff, criterios, escenarios (formato parseable), convención de IDs en JUnit, hallazgos, escalamientos, informe de verificación |
-| [referencias/portabilidad.md](referencias/portabilidad.md) | Cómo se ejecutan las instrucciones de sub-agentes, preguntas al usuario y carga de skills en cada herramienta (Claude Code, Codex, Copilot, Cursor, Windsurf) |
+| [references/role-model.md](references/role-model.md) | Who writes what and who approves; solo and duo modes; information barrier N1-N3; escalation; what the seal guarantees and what it does not |
+| [references/environment-ladder.md](references/environment-ladder.md) | Rungs 0 to 5, scenario assignment rule, execution cadences |
+| [references/formats.md](references/formats.md) | Handoff, criteria, scenarios (parseable format), ID convention in JUnit, findings, escalations, verification report |
+| [references/portability.md](references/portability.md) | How the instructions for subagents, questions to the user and skill loading run in each tool (Claude Code, Codex, Copilot, Cursor, Windsurf) |
 
 ## Scripts
 
-Python 3.10+ y solo la biblioteca estándar (más `git` para el sello contra la rama base y los mutantes). Se ejecutan desde la raíz del repositorio bajo prueba; `<qa-core>` es la ruta de esta carpeta.
+Python 3.10+ and the standard library only (plus `git` for the seal against the base branch and for mutants). They run from the root of the repository under test; `<qa-core>` is the path of this folder.
 
-| Script | Qué hace |
+| Script | What it does |
 |---|---|
-| `scripts/sello.py` | Hash de todo el oráculo; detecta cambios, enlaces simbólicos y re-sellados desde la rama base |
-| `scripts/trazabilidad.py` | Cadena criterio → escenario → test → resultado; saltado, no ejecutado o reporte viejo no son verdes |
-| `scripts/mutantes.py` | Mutantes en worktrees temporales; solo cuenta como detectado si falla un escenario |
+| `scripts/seal.py` | Hashes the whole oracle; detects changes, symbolic links and reseals since the base branch |
+| `scripts/traceability.py` | Chain criterion → scenario → test → result; skipped, not executed or a stale report are not green |
+| `scripts/mutants.py` | Mutants in temporary worktrees; counts as detected only if a scenario fails |
 
 Tests: `python3 -m unittest discover -s <qa-core>/scripts/tests`.

@@ -1,89 +1,89 @@
-# Cuándo usar dobles de test (Go)
+# When to use test doubles (Go)
 
-Usa dobles solo en las **fronteras del sistema**:
+Use doubles only at the **system's boundaries**:
 
-- APIs externas (pasarelas de pago, partners, proveedores de auth)
-- Bases de datos (a veces; prefiere una base real de test)
-- Tiempo y aleatoriedad
-- Sistema de archivos (a veces; `fstest.MapFS` o `t.TempDir()` suelen bastar)
+- External APIs (payment gateways, partners, auth providers)
+- Databases (sometimes; prefer a real test database)
+- Time and randomness
+- File system (sometimes; `fstest.MapFS` or `t.TempDir()` are usually enough)
 
-No uses dobles para:
+Do not use doubles for:
 
-- Tus propios tipos o paquetes
-- Colaboradores internos
-- Nada que controles
+- Your own types or packages
+- Internal collaborators
+- Anything you control
 
-Analogía: un doble es un actor de reparto que sustituye a alguien que no puedes traer al set (el banco, el partner). A tus propios actores los dejas actuar.
+Analogy: a double is a stand-in actor replacing someone you cannot bring to the set (the bank, the partner). You let your own actors act.
 
-## Preferencias en Go
+## Preferences in Go
 
-1. **Base real antes que doble.** Para Postgres o MySQL, usa una base de test (contenedor con `testcontainers-go` o una instancia de CI). Para Redis o Kafka, igual. Un doble de base de datos testea tu suposición sobre la base, no la base.
-2. **Fakes escritos a mano antes que mocks generados.** Un fake en memoria que implementa la interfaz (un `map` protegido con `sync.Mutex`) da tests que leen como el uso real. Los mocks generados (`gomock`, `mockery`) solo para APIs externas difíciles de simular, y aun así asertando resultados, no llamadas.
-3. **`httptest.Server` para APIs HTTP externas.** Levanta un servidor que responde como el partner y apunta el cliente a su URL. Testeas el cliente HTTP real, el parseo y los errores.
+1. **Real database before a double.** For Postgres or MySQL, use a test database (a container with `testcontainers-go` or a CI instance). The same for Redis or Kafka. A database double tests your assumption about the database, not the database.
+2. **Hand-written fakes before generated mocks.** An in-memory fake that implements the interface (a `map` protected by a `sync.Mutex`) gives tests that read like real usage. Generated mocks (`gomock`, `mockery`) only for external APIs that are hard to simulate, and even then asserting results, not calls.
+3. **`httptest.Server` for external HTTP APIs.** Start a server that answers like the partner and point the client at its URL. You test the real HTTP client, the parsing and the errors.
 
-## Diseñar para poder sustituir
+## Designing for substitution
 
-En las fronteras, diseña interfaces fáciles de sustituir:
+At the boundaries, design interfaces that are easy to substitute:
 
-**1. Inyecta dependencias**
+**1. Inject dependencies**
 
-Pasa las dependencias externas en vez de crearlas dentro:
-
-```go
-// Fácil de sustituir
-func ProcesarPago(ctx context.Context, o Orden, cobros Cobrador) error {
-	return cobros.Cobrar(ctx, o.Total)
-}
-
-// Difícil de sustituir
-func ProcesarPago(ctx context.Context, o Orden) error {
-	client := gestorpagos.NewClient(os.Getenv("GESTOR_PAGOS_KEY"))
-	return client.Cobrar(ctx, o.Total)
-}
-```
-
-**2. Interfaces pequeñas definidas por el consumidor**
-
-"Accept interfaces, return structs." Define la interfaz en el paquete que la usa, con solo los métodos que necesita, no en el paquete que la implementa:
+Pass external dependencies in instead of creating them inside:
 
 ```go
-// En el paquete suscripciones, no en el cliente del gestor de pagos
-type Cobrador interface {
-	Cobrar(ctx context.Context, monto Money) (CobroID, error)
+// Easy to substitute
+func ProcessPayment(ctx context.Context, o Order, charges Charger) error {
+	return charges.Charge(ctx, o.Total)
+}
+
+// Hard to substitute
+func ProcessPayment(ctx context.Context, o Order) error {
+	client := paymentgateway.NewClient(os.Getenv("PAYMENT_GATEWAY_KEY"))
+	return client.Charge(ctx, o.Total)
 }
 ```
 
-**3. Métodos específicos antes que un fetcher genérico**
+**2. Small interfaces defined by the consumer**
 
-Crea un método por operación externa en vez de uno genérico con lógica condicional:
+"Accept interfaces, return structs." Define the interface in the package that uses it, with only the methods it needs, not in the package that implements it:
 
 ```go
-// BIEN: cada método se sustituye por separado
+// In the subscriptions package, not in the payment gateway client
+type Charger interface {
+	Charge(ctx context.Context, amount Money) (ChargeID, error)
+}
+```
+
+**3. Specific methods before a generic fetcher**
+
+Create one method per external operation instead of a generic one with conditional logic:
+
+```go
+// GOOD: each method is substituted separately
 type PartnerClient interface {
-	ObtenerUsuario(ctx context.Context, id string) (Usuario, error)
-	ListarSuscripciones(ctx context.Context, userID string) ([]Suscripcion, error)
-	CrearSuscripcion(ctx context.Context, s NuevaSuscripcion) (Suscripcion, error)
+	GetUser(ctx context.Context, id string) (User, error)
+	ListSubscriptions(ctx context.Context, userID string) ([]Subscription, error)
+	CreateSubscription(ctx context.Context, s NewSubscription) (Subscription, error)
 }
 
-// MAL: el doble necesita lógica condicional dentro
+// BAD: the double needs conditional logic inside
 type PartnerClient interface {
 	Do(ctx context.Context, method, path string, body any) ([]byte, error)
 }
 ```
 
-Con métodos específicos:
-- Cada doble devuelve una forma concreta
-- No hay lógica condicional en el setup del test
-- Se ve qué operaciones usa cada test
-- Hay tipado por operación
+With specific methods:
+- Each double returns a concrete shape
+- There is no conditional logic in the test setup
+- You can see which operations each test uses
+- There is typing per operation
 
-**4. El tiempo también se inyecta**
+**4. Time is injected too**
 
 ```go
-type Reloj func() time.Time
+type Clock func() time.Time
 
-func NuevoServicio(repo Repo, ahora Reloj) *Servicio { ... }
+func NewService(repo Repo, now Clock) *Service { ... }
 
-// En producción: NuevoServicio(repo, time.Now)
-// En el test:   NuevoServicio(repo, func() time.Time { return fechaFija })
+// In production: NewService(repo, time.Now)
+// In the test:   NewService(repo, func() time.Time { return fixedDate })
 ```

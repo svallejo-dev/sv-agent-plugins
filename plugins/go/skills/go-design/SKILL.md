@@ -1,57 +1,57 @@
 ---
 name: go-design
-description: "Traduce el vocabulario de módulos profundos (módulo, interfaz, seam, adapter, profundidad) a las herramientas de Go (paquetes, internal/, interfaces del consumidor, inyección por constructor). La carga la skill codebase-design cuando el código es Go; úsala también al diseñar la interfaz de un paquete Go."
+description: "Translates the deep-module vocabulary (module, interface, seam, adapter, depth) into Go's tools (packages, internal/, consumer-side interfaces, constructor injection). The codebase-design skill loads it when the code is Go; also use it when designing the interface of a Go package."
 license: MIT
 ---
 
-# Diseño en Go
+# Design in Go
 
-Responde en español y conserva en inglés los términos técnicos habituales.
+Respond in the user's language; keep common technical terms in English.
 
-Complementa a `codebase-design`: allí está el vocabulario y los principios (profundidad como leverage, prueba del borrado, un adapter = seam hipotético); aquí, cómo se expresan en Go. Para profundizar, invoca:
+Complements `codebase-design`: that skill holds the vocabulary and the principles (depth as leverage, the deletion test, one adapter = hypothetical seam); this one, how they are expressed in Go. To go deeper, invoke:
 
-- `go-design-rules`: Ley de Demeter, Tell-Don't-Ask, CQS, tipos con nombre, estados ilegales, dependencias explícitas, DRY/SOLID en Go.
-- `ddd-go-idiomatic`: value objects, entidades, agregados, bounded contexts, casos de uso y layout de archivos.
-- `senior-go-idiomatic`: interfaces y composición, layout de proyecto (`cmd/`, `internal/`, composition root).
+- `go-design-rules`: Law of Demeter, Tell-Don't-Ask, CQS, named types, illegal states, explicit dependencies, DRY/SOLID in Go.
+- `ddd-go-idiomatic`: value objects, entities, aggregates, bounded contexts, use cases and file layout.
+- `senior-go-idiomatic`: interfaces and composition, project layout (`cmd/`, `internal/`, composition root).
 
-## El vocabulario en Go
+## The vocabulary in Go
 
-| Concepto | En Go |
+| Concept | In Go |
 |---|---|
-| **Módulo** | Una función, un tipo con sus métodos, un paquete. El paquete es la unidad natural de profundidad. |
-| **Interfaz** (en el sentido amplio) | Lo exportado del paquete más sus invariantes, errores (sentinelas o tipados), requisitos de `context.Context` y de concurrencia. No solo la palabra clave `interface`. |
-| **Esconder la implementación** | Identificadores sin exportar; subpaquetes dentro de `internal/`, que el compilador impide importar desde fuera del árbol. |
-| **Seam** | Una `interface` pequeña declarada en el paquete **consumidor**, con los métodos que usa. "Accept interfaces, return structs." |
-| **Adapter** | Un struct concreto que satisface esa interface: el repositorio Postgres en producción, el fake en memoria en tests. |
-| **Inyección de dependencias** | Por constructor (`NewServicio(repo Repo, ahora func() time.Time)`), cableado en el composition root de `cmd/<app>/main.go`. Sin globals ni singletons. |
+| **Module** | A function, a type with its methods, a package. The package is the natural unit of depth. |
+| **Interface** (in the broad sense) | What the package exports plus its invariants, errors (sentinel or typed), `context.Context` and concurrency requirements. Not just the `interface` keyword. |
+| **Hiding the implementation** | Unexported identifiers; subpackages inside `internal/`, which the compiler prevents importing from outside the tree. |
+| **Seam** | A small `interface` declared in the **consumer** package, with the methods it uses. "Accept interfaces, return structs." |
+| **Adapter** | A concrete struct that satisfies that interface: the Postgres repository in production, the in-memory fake in tests. |
+| **Dependency injection** | Through the constructor (`NewService(repo Repo, now func() time.Time)`), wired in the composition root at `cmd/<app>/main.go`. No globals or singletons. |
 
-## Reglas
+## Rules
 
-- **No declares una `interface` junto a su única implementación.** Hasta que haya dos adapters (normalmente producción + test), es indirección; devuelve el struct concreto.
-- **Interfaces pequeñas.** Si el consumidor usa dos métodos, la interface tiene dos métodos.
-- **Profundidad por paquete.** Una función exportada que hace mucho vale más que diez que reenvían. Si el paquete exporta casi tanto como implementa, es superficial.
-- **Prueba del borrado en Go**: si borrar el paquete solo obliga a mover tres líneas a cada llamador, era un pasamanos.
-- **Categorías de dependencias** (de `DEEPENING.md` en `codebase-design`): sustituible localmente → contenedor con `testcontainers-go`, `fstest.MapFS` o `t.TempDir()`; remota propia → port como `interface` del consumidor + adapter HTTP/gRPC + adapter en memoria; externa → port + `httptest.Server` o fake.
+- **Do not declare an `interface` next to its only implementation.** Until there are two adapters (usually production + test), it is indirection; return the concrete struct.
+- **Small interfaces.** If the consumer uses two methods, the interface has two methods.
+- **Depth per package.** One exported function that does a lot is worth more than ten that forward. If the package exports almost as much as it implements, it is shallow.
+- **The deletion test in Go**: if deleting the package only forces moving three lines into each caller, it was a pass-through.
+- **Dependency categories** (from `DEEPENING.md` in `codebase-design`): locally substitutable → a container with `testcontainers-go`, `fstest.MapFS` or `t.TempDir()`; remote but owned → port as a consumer-side `interface` + HTTP/gRPC adapter + in-memory adapter; external → port + `httptest.Server` or a fake.
 
-## Ejemplo
+## Example
 
 ```go
-// Paquete consumidor: suscripciones. Declara solo lo que usa.
-type Cobrador interface {
-	Cobrar(ctx context.Context, monto Money) (CobroID, error)
+// Consumer package: subscriptions. It declares only what it uses.
+type Charger interface {
+	Charge(ctx context.Context, amount Money) (ChargeID, error)
 }
 
-type Servicio struct {
-	cobros Cobrador
-	ahora  func() time.Time
+type Service struct {
+	charges Charger
+	now     func() time.Time
 }
 
-func NewServicio(c Cobrador, ahora func() time.Time) *Servicio {
-	return &Servicio{cobros: c, ahora: ahora}
+func NewService(c Charger, now func() time.Time) *Service {
+	return &Service{charges: c, now: now}
 }
 
-// Interfaz profunda: una operación que esconde reglas de renovación, reintentos y eventos.
-func (s *Servicio) Renovar(ctx context.Context, id SuscripcionID) error { ... }
+// Deep interface: one operation that hides renewal rules, retries and events.
+func (s *Service) Renew(ctx context.Context, id SubscriptionID) error { ... }
 ```
 
-El cliente del gestor de pagos (otro paquete) devuelve un struct concreto que satisface `Cobrador` sin saber que existe; el test usa un fake en memoria.
+The payment gateway client (another package) returns a concrete struct that satisfies `Charger` without knowing it exists; the test uses an in-memory fake.

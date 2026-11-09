@@ -1,0 +1,1 @@
+We are a startup with 6 engineers and about 2,000 orders a day. Design the order management backend: create the order, track its status and basic inventory. Our CTO wants microservices from day one (orders, inventory, payments and notifications separately, communicating through Kafka) to be "ready to scale". What do you recommend?

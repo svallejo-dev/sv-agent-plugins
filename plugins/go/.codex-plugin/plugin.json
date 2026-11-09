@@ -1,7 +1,7 @@
 {
   "name": "go",
-  "version": "0.3.0",
-  "description": "Dominio Go: Go idiomático (Go 1.26), reglas de diseño, DDD táctico en Go, simplificación sin cambiar comportamiento (go-simplify, con go fix y modernizadores) y las skills de rol que usa el plugin ingenieria: go-review, go-testing, go-debugging y go-design.",
+  "version": "0.4.0",
+  "description": "Go domain: idiomatic Go (Go 1.26), design rules, tactical DDD in Go, behavior-preserving simplification (go-simplify, with go fix and modernizers) and the role skills the engineering plugin uses: go-review, go-testing, go-debugging and go-design.",
   "author": {
     "name": "Sebastian Vallejo",
     "url": "https://github.com/svallejo-dev"
