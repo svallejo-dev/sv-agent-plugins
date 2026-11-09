@@ -27,50 +27,110 @@ Plugins de ingeniería para agentes de código, en español, que funcionan en **
 
 ## Instalación
 
+Cada herramienta tiene dos formas: **todos los plugins de una vez** o **solo los que elijas**. Los nombres de los plugins son `general`, `ingenieria`, `qa`, `arquitectura` y `go`. Después de instalar, abre una sesión nueva para que la herramienta cargue las skills.
+
 ### Claude Code
+
+Todos los plugins:
+
+```bash
+claude plugin marketplace add svallejo-dev/sv-agent-plugins; for p in general ingenieria qa arquitectura go; do claude plugin install "$p@sv-agent-plugins"; done
+```
+
+Solo algunos:
 
 ```bash
 claude plugin marketplace add svallejo-dev/sv-agent-plugins
-claude plugin install qa@sv-agent-plugins          # o general, ingenieria, arquitectura, go
+claude plugin install qa@sv-agent-plugins
 ```
 
-Dentro de una sesión: `/plugin marketplace add svallejo-dev/sv-agent-plugins` y `/plugin install qa@sv-agent-plugins`. En Claude Code las skills de un plugin llevan el nombre del plugin como prefijo: `qa:qa-verify`, `ingenieria:tdd`.
+Dentro de una sesión: `/plugin marketplace add svallejo-dev/sv-agent-plugins` y luego `/plugin install <plugin>@sv-agent-plugins` por cada plugin (o elígelos en el menú de `/plugin`). En Claude Code las skills llevan el nombre del plugin como prefijo: `qa:qa-verify`, `ingenieria:tdd`.
 
 ### OpenAI Codex
+
+Todos los plugins:
+
+```bash
+codex plugin marketplace add svallejo-dev/sv-agent-plugins; for p in general ingenieria qa arquitectura go; do codex plugin add "$p@sv-agent-plugins"; done
+```
+
+Solo algunos:
 
 ```bash
 codex plugin marketplace add svallejo-dev/sv-agent-plugins
 codex plugin add qa@sv-agent-plugins
 ```
 
-También puedes instalar desde el navegador de plugins de la app o de la CLI (`/plugins`).
+También puedes instalarlos desde el navegador de plugins de la app o de la CLI (`/plugins`).
 
 ### GitHub Copilot
 
-CLI:
+CLI, todos los plugins:
+
+```bash
+copilot plugin marketplace add svallejo-dev/sv-agent-plugins; for p in general ingenieria qa arquitectura go; do copilot plugin install "$p@sv-agent-plugins"; done
+```
+
+CLI, solo algunos:
 
 ```bash
 copilot plugin marketplace add svallejo-dev/sv-agent-plugins
 copilot plugin install qa@sv-agent-plugins
 ```
 
-En VS Code, añade el repositorio como marketplace de agent plugins en la configuración de Copilot Chat y búscalo con `@agentPlugins` en la vista de Extensiones. Para un solo repositorio sin plugins: `./install.sh --tool copilot --project-dir <repo>` copia las skills a `.github/skills/`.
+En VS Code, añade el repositorio como marketplace de agent plugins en la configuración de Copilot Chat y búscalo con `@agentPlugins` en la vista de Extensiones.
+
+Solo las skills, en un repositorio concreto (las copia a `<repo>/.github/skills/`):
+
+```bash
+./install.sh --tool copilot --project-dir <repo>                       # todas
+./install.sh --tool copilot --project-dir <repo> --plugins qa          # algunas
+```
 
 ### Cursor
 
-- **Plugin local**: `ln -s "$PWD/plugins/qa" ~/.cursor/plugins/local/qa` desde un clon de este repositorio, y recarga la ventana.
-- **Marketplace de equipo**: importa este repositorio en el panel de plugins de tu equipo; lee `.cursor-plugin/marketplace.json`.
-- **Solo skills** (también para `cursor-agent` en terminal, que hoy no registra las skills de los plugins): `./install.sh --tool cursor --scope user --plugins qa`.
+Desde un clon de este repositorio:
+
+```bash
+git clone https://github.com/svallejo-dev/sv-agent-plugins && cd sv-agent-plugins
+```
+
+Todos los plugins, como plugins locales (después recarga la ventana):
+
+```bash
+mkdir -p ~/.cursor/plugins/local; for p in general ingenieria qa arquitectura go; do ln -sfn "$PWD/plugins/$p" ~/.cursor/plugins/local/$p; done
+```
+
+Solo algunos: `ln -sfn "$PWD/plugins/qa" ~/.cursor/plugins/local/qa`.
+
+Solo las skills (también sirve para `cursor-agent` en terminal, que hoy no registra las skills de los plugins):
+
+```bash
+./install.sh --tool cursor --scope user                 # todas
+./install.sh --tool cursor --scope user --plugins qa    # algunas
+```
+
+Para un equipo: importa este repositorio en el panel de plugins del equipo; Cursor lee `.cursor-plugin/marketplace.json` y muestra los cinco plugins.
 
 ### Windsurf
 
-Windsurf lee skills de `.windsurf/skills/` (proyecto) y `~/.codeium/windsurf/skills/` (usuario):
+Windsurf no tiene sistema de plugins: lee skills de `.windsurf/skills/` (proyecto) y `~/.codeium/windsurf/skills/` (usuario).
 
 ```bash
-git clone https://github.com/svallejo-dev/sv-agent-plugins
-cd sv-agent-plugins
-./install.sh --tool windsurf --scope user --plugins qa,ingenieria
+git clone https://github.com/svallejo-dev/sv-agent-plugins && cd sv-agent-plugins
+./install.sh --tool windsurf --scope user                          # todos los plugins
+./install.sh --tool windsurf --scope user --plugins qa,ingenieria  # algunos
 ```
+
+### Todas las herramientas a la vez (solo skills)
+
+Si usas varias herramientas en la misma máquina, desde el clon:
+
+```bash
+for t in claude codex cursor windsurf; do ./install.sh --tool "$t" --scope user --link; done
+```
+
+`--link` crea enlaces simbólicos al clon, así un `git pull` actualiza todas las herramientas a la vez. Si en Claude Code, Codex o Copilot ya instalaste los plugins por marketplace, no instales además sus skills sueltas: tendrías cada skill dos veces.
 
 ### `install.sh`
 
@@ -79,7 +139,10 @@ cd sv-agent-plugins
 ./install.sh --dest <carpeta-de-skills> [--plugins a,b]
 ```
 
-Instala las skills de cada plugin elegido, copia por defecto (`--link` crea enlaces simbólicos para recibir actualizaciones con `git pull`) y nunca sobrescribe una skill ajena sin `--force`. Instala siempre el plugin completo: algunas skills dependen de una hermana (por ejemplo, todas las `qa-*` usan `qa-core`).
+- Sin `--plugins`, instala **todos** los plugins.
+- Copia por defecto; `--link` crea enlaces simbólicos para recibir actualizaciones con `git pull`.
+- Nunca sobrescribe una skill ajena sin `--force`; `--dry-run` muestra qué instalaría.
+- Instala siempre el plugin completo: algunas skills dependen de una hermana (todas las `qa-*` usan `qa-core`).
 
 ## Cómo funcionan juntos
 
@@ -136,13 +199,30 @@ Engineering plugins for coding agents, **written in Spanish**, that work in **Cl
 
 ### Install
 
+All plugins at once (plugin names: `general`, `ingenieria`, `qa`, `arquitectura`, `go`):
+
+```bash
+# Claude Code
+claude plugin marketplace add svallejo-dev/sv-agent-plugins; for p in general ingenieria qa arquitectura go; do claude plugin install "$p@sv-agent-plugins"; done
+# OpenAI Codex
+codex plugin marketplace add svallejo-dev/sv-agent-plugins; for p in general ingenieria qa arquitectura go; do codex plugin add "$p@sv-agent-plugins"; done
+# GitHub Copilot CLI
+copilot plugin marketplace add svallejo-dev/sv-agent-plugins; for p in general ingenieria qa arquitectura go; do copilot plugin install "$p@sv-agent-plugins"; done
+# Cursor (from a clone of this repo; then reload the window)
+mkdir -p ~/.cursor/plugins/local; for p in general ingenieria qa arquitectura go; do ln -sfn "$PWD/plugins/$p" ~/.cursor/plugins/local/$p; done
+# Windsurf (from a clone; no plugin system, skills only)
+./install.sh --tool windsurf --scope user
+```
+
+A single plugin:
+
 | Tool | Command |
 |---|---|
 | Claude Code | `claude plugin marketplace add svallejo-dev/sv-agent-plugins` then `claude plugin install qa@sv-agent-plugins` |
 | OpenAI Codex | `codex plugin marketplace add svallejo-dev/sv-agent-plugins` then `codex plugin add qa@sv-agent-plugins` |
 | GitHub Copilot CLI | `copilot plugin marketplace add svallejo-dev/sv-agent-plugins` then `copilot plugin install qa@sv-agent-plugins` |
-| Cursor | symlink `plugins/<name>` into `~/.cursor/plugins/local/`, import the repo as a team marketplace, or `./install.sh --tool cursor --scope user` |
-| Windsurf | `./install.sh --tool windsurf --scope user --plugins qa` (Windsurf has no plugin system; skills go to `~/.codeium/windsurf/skills/`) |
+| Cursor | `ln -sfn "$PWD/plugins/qa" ~/.cursor/plugins/local/qa`, or `./install.sh --tool cursor --scope user --plugins qa` |
+| Windsurf | `./install.sh --tool windsurf --scope user --plugins qa` (skills go to `~/.codeium/windsurf/skills/`) |
 
 Claude Code, Codex and Copilot CLI installs were verified end to end (5 plugins, 37 skills). Cursor and Windsurf follow their documented formats; the installer is tested, but not inside those editors.
 
